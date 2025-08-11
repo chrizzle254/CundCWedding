@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hochzeit Cathrin & Christoph</title>
+    <link rel="icon" type="image/x-icon" href="public/favicon.ico">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="src/styles.css">
+    
+
+    <style>
+        body {
+            font-family: 'Crimson Text', serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Playfair Display', serif;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fef3c7 50%, #fef7e0 100%);
+        }
+        .section-fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .section-fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .password-screen {
+            background: linear-gradient(135deg, #fdf2f8 0%, #fef3c7 50%, #fef7e0 100%);
+        }
+        .spotify-player {
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .timeline-item {
+            position: relative;
+        }
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -20px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            background: #d4af37;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            box-shadow: 0 0 0 3px #fef3c7;
+        }
+        .faq-item {
+            transition: all 0.3s ease;
+        }
+        .faq-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        .contact-card {
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        .rsvp-button {
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            transition: all 0.3s ease;
+        }
+        .rsvp-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Password Protection Screen -->
+    <div id="passwordScreen" class="password-screen fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="text-center max-w-md w-full">
+            <div class="mb-8">
+                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">💒</h1>
+                <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Willkommen</h2>
+                <p class="text-gray-600 text-lg">zur Hochzeit von Cathrin & Christoph</p>
+            </div>
+            
+            <div class="card-elegant">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Bitte geben Sie das Passwort ein</h3>
+                <input 
+                    type="password" 
+                    id="passwordInput" 
+                    placeholder="Passwort eingeben..."
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-gold-400 focus:outline-none text-center text-lg mb-4"
+                    autocomplete="off"
+                >
+                <button 
+                    id="loginButton"
+                    class="btn-primary w-full"
+                >
+                    Website betreten
+                </button>
+                <p id="passwordError" class="text-red-500 text-sm mt-2 hidden">Falsches Passwort. Bitte versuchen Sie es erneut.</p>
+                <p id="debugInfo" class="text-xs text-gray-500 mt-2">Debug: JavaScript lädt...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Website Content (Hidden until password is correct) -->
+    <div id="mainContent" class="hidden">
+        <!-- Spotify Playlist Section -->
+        <section class="py-16 px-4 gradient-bg">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8">🎵 Unsere Hochzeitsplaylist</h2>
+                <div class="spotify-container">
+                    <iframe 
+                        id="spotifyPlayer"
+                        style="border-radius:12px" 
+                        src="https://open.spotify.com/embed/playlist/37i9dQZF1DX5Vy6DFOcx00?utm_source=generator" 
+                        width="100%" 
+                        height="352" 
+                        frameborder="0" 
+                        allowfullscreen="" 
+                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hero Section -->
+        <section class="py-20 px-4 relative overflow-hidden hero-gradient">
+            <div class="relative z-10 max-w-6xl mx-auto text-center">
+                <div class="mb-8">
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-gray-800 mb-6 leading-tight">
+                        Cathrin<br>&<br>Christoph
+                    </h1>
+                </div>
+                <div class="text-2xl md:text-3xl text-gray-700 mb-8">
+                    <p class="font-light">feiern ihre Hochzeit</p>
+                </div>
+                <div class="text-xl md:text-2xl text-gray-600 mb-12">
+                    <p class="font-semibold">am 06. Juni 2026</p>
+                    <p class="font-light">in Schloss Bredeneek, Nähe Kiel</p>
+                </div>
+                <div class="inline-block bg-white/80 backdrop-blur-sm rounded-full px-8 py-4 shadow-lg">
+                    <p class="text-lg text-gray-700 font-medium">💕 Wir freuen uns auf Sie! 💕</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Agenda Section -->
+        <section class="py-20 px-4 bg-white">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📅 Ablauf des Tages</h2>
+                
+                <div class="timeline-container">
+                    <div id="agendaItems" class="space-y-8">
+                        <!-- Agenda items will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="py-20 px-4 gradient-bg">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">❓ Häufige Fragen</h2>
+                
+                <div class="space-y-6" id="faqItems">
+                    <!-- FAQ items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Important Contacts Section -->
+        <section class="py-20 px-4 bg-white">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📞 Wichtige Kontakte</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="contactItems">
+                    <!-- Contact items will be populated by JavaScript -->
+                </div>
+            </div>
+        </section>
+
+        <!-- RSVP Section -->
+        <section class="py-20 px-4 gradient-bg">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8">💌 RSVP</h2>
+                <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+                    Bitte bestätigen Sie Ihre Teilnahme und teilen Sie uns mit, ob Sie Begleitung mitbringen und ob Sie besondere Ernährungsgewohnheiten haben.
+                </p>
+                
+                <a 
+                    id="rsvpButton"
+                    href="#" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="rsvp-button inline-block text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg hover-lift"
+                >
+                    Jetzt antworten →
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="py-12 px-4 bg-gray-800 text-white text-center">
+            <div class="max-w-4xl mx-auto">
+                <p class="text-lg mb-4">Cathrin & Christoph</p>
+                <p class="text-gray-400">06. Juni 2026 • Schloss Bredeneek</p>
+                <p class="text-sm text-gray-500 mt-6">Mit Liebe erstellt für unsere besonderen Gäste</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Configuration and JavaScript -->
+    <script src="config.js" ></script>
+    <script src="src/main.js"></script>
+
+    
+    <!-- Debug script to check if everything loaded -->
+    <script>
+        console.log('HTML loaded');
+        console.log('Config loaded:', typeof window.weddingConfig);
+        console.log('Main JS loaded:', typeof checkPassword);
+        
+        // Update debug info
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugInfo = document.getElementById('debugInfo');
+            if (debugInfo) {
+                debugInfo.textContent = `Debug: Config=${typeof window.weddingConfig}, checkPassword=${typeof checkPassword}`;
+            }
+        });
+    </script>
+</body>
+</html> 

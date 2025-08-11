@@ -1,0 +1,34 @@
+{
+  "name": "cundc-wedding-website",
+  "version": "1.0.0",
+  "description": "Eine elegante, responsive Hochzeitswebsite für Cathrin & Christoph",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "serve": "npx serve .",
+    "dev": "python3 -m http.server 8000",
+    "build": "echo 'No build step required - static website'",
+    "deploy": "echo 'Push to GitHub and enable GitHub Pages'"
+  },
+  "keywords": [
+    "wedding",
+    "website",
+    "german",
+    "responsive",
+    "static",
+    "password-protected"
+  ],
+  "author": "Cathrin & Christoph",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/CundCWedding.git"
+  },
+  "homepage": "https://username.github.io/CundCWedding"
+} 

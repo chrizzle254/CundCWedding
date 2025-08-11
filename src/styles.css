@@ -1,0 +1,263 @@
+/* Custom styles for Cathrin & Christoph's wedding website */
+
+/* Custom color variables */
+:root {
+  --wedding-gold: #d4af37;
+  --wedding-pink: #fdf2f8;
+  --wedding-cream: #fef7e0;
+  --wedding-blush: #fce7f3;
+  --wedding-dark: #1f2937;
+}
+
+/* Enhanced animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+/* Enhanced section animations */
+.section-fade-in {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.section-slide-in {
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+/* Enhanced hover effects */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom button styles */
+.btn-primary {
+  background: linear-gradient(135deg, var(--wedding-gold) 0%, #b8860b 100%);
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 1.125rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+  background: linear-gradient(135deg, #b8860b 0%, var(--wedding-gold) 100%);
+}
+
+/* Enhanced card styles */
+.card-elegant {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.card-elegant:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Timeline enhancements */
+.timeline-container {
+  position: relative;
+}
+
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  left: 1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, var(--wedding-gold), var(--wedding-pink));
+}
+
+.timeline-item {
+  position: relative;
+  margin-left: 3rem;
+  margin-bottom: 2rem;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2.25rem;
+  top: 1.5rem;
+  width: 1rem;
+  height: 1rem;
+  background: var(--wedding-gold);
+  border-radius: 50%;
+  border: 3px solid white;
+  box-shadow: 0 0 0 3px var(--wedding-cream);
+  z-index: 1;
+}
+
+/* FAQ enhancements */
+.faq-item {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+  border-color: var(--wedding-gold);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.1);
+}
+
+.faq-question {
+  cursor: pointer;
+  user-select: none;
+}
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.faq-answer.expanded {
+  max-height: 200px;
+}
+
+/* Contact card enhancements */
+.contact-card {
+  background: linear-gradient(135deg, white 0%, var(--wedding-pink) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.contact-card:hover {
+  border-color: var(--wedding-gold);
+  background: linear-gradient(135deg, var(--wedding-pink) 0%, white 100%);
+}
+
+/* Spotify player enhancements */
+.spotify-container {
+  background: white;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Hero section enhancements */
+.hero-gradient {
+  background: linear-gradient(135deg, 
+    var(--wedding-pink) 0%, 
+    var(--wedding-cream) 25%, 
+    var(--wedding-blush) 50%, 
+    var(--wedding-pink) 75%, 
+    var(--wedding-cream) 100%);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Responsive enhancements */
+@media (max-width: 768px) {
+  .timeline-container::before {
+    left: 1rem;
+  }
+  
+  .timeline-item {
+    margin-left: 2rem;
+  }
+  
+  .timeline-item::before {
+    left: -1.75rem;
+  }
+  
+  .hero-gradient {
+    background-size: 200% 200%;
+  }
+}
+
+/* Print styles */
+@media print {
+  .password-screen,
+  .spotify-container,
+  .rsvp-button {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .section-fade-in {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Focus styles for accessibility */
+button:focus,
+input:focus,
+a:focus {
+  outline: 2px solid var(--wedding-gold);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --wedding-gold: #000000;
+    --wedding-pink: #ffffff;
+    --wedding-cream: #ffffff;
+    --wedding-blush: #ffffff;
+    --wedding-dark: #000000;
+  }
+} 
