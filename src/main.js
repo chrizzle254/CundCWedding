@@ -6,7 +6,7 @@ console.log('main.js script start');
 
 
 let config = null; // declare once
-//window.config = window.config || null;
+let configLoaded = false;
 let isAuthenticated = false;
 
 /**
@@ -24,16 +24,15 @@ function checkPassword() {
 
     const enteredPassword = input.value.trim();
 
-    if (!window.weddingConfig || !window.weddingConfig.password) {
-        console.error("❌ Config (config.js) not loaded or password missing");
+    if (!config || !config.password) {
+        console.error("❌ Config not loaded or password missing");
         alert("Error: Configuration not loaded.");
         return;
     }
 
-    if (enteredPassword === window.weddingConfig.password) {
+    if (enteredPassword === config.password) {
         console.log("✅ Password correct, showing main content");
         isAuthenticated = true;
-        config = window.weddingConfig;
 
         // Save auth token for session persistence
         localStorage.setItem("weddingAuthToken", generateAuthToken());
@@ -73,12 +72,10 @@ function setupEventListeners() {
  * Restore authentication status from localStorage
  */
 function checkAuthenticationStatus() {
-    if (!window.weddingConfig) {
+    if (!config) {
         showConfigError();
         return;
     }
-
-    config = window.weddingConfig;
 
     const authToken = localStorage.getItem("weddingAuthToken");
     if (authToken && authToken === generateAuthToken()) {
@@ -292,20 +289,23 @@ function showConfigError() {
     }
 }
 
+
 // Wait for DOM ready
 document.addEventListener("DOMContentLoaded", () => {
     console.log("📄 DOMContentLoaded — Initializing...");
-
     setupEventListeners();
-
-    if (window.weddingConfig) {
-        config = window.weddingConfig;
-        console.log("🔧 weddingConfig loaded:", window.weddingConfig);
-        checkAuthenticationStatus();
-    } else {
-        console.error("❌ weddingConfig not available. Please check config.js.");
-        showConfigError();
-    }
+    fetch('/.netlify/functions/config')
+        .then(res => res.json())
+        .then(cfg => {
+            config = cfg;
+            configLoaded = true;
+            console.log("🔧 Config loaded from Netlify Function:", config);
+            checkAuthenticationStatus();
+        })
+        .catch(err => {
+            console.error("❌ Config not available from Netlify Function.", err);
+            showConfigError();
+        });
 });
 
 // Export globals for HTML inline calls
