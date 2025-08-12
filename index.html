@@ -116,6 +116,20 @@
 
     <!-- Main Website Content (Hidden until password is correct) -->
     <div id="mainContent" class="hidden">
+        <!-- Banner Image Carousel -->
+        <section class="py-8 px-4 bg-white">
+            <div class="max-w-4xl mx-auto">
+                <div id="bannerCarousel" class="relative w-full overflow-hidden rounded-2xl shadow-lg" style="max-height:400px;">
+                    <img id="bannerImg0" src="public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg" class="w-full object-cover banner-img" style="display:block; max-height:400px;" alt="Banner 1" />
+                    <img id="bannerImg1" src="public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg" class="w-full object-cover banner-img" style="display:none; max-height:400px;" alt="Banner 2" />
+                    <img id="bannerImg2" src="public/8EF1CAF2-1C33-4677-90D0-E1F414E4E904_1_105_c.jpeg" class="w-full object-cover banner-img" style="display:none; max-height:400px;" alt="Banner 3" />
+                    <img id="bannerImg3" src="public/9EC4BCAE-01EF-47D0-892F-CFB3BE5173A1_1_105_c.jpeg" class="w-full object-cover banner-img" style="display:none; max-height:400px;" alt="Banner 4" />
+                    <img id="bannerImg4" src="public/FB48FE58-53AA-4495-B07B-BA6458D93EC9_1_105_c.jpeg" class="w-full object-cover banner-img" style="display:none; max-height:400px;" alt="Banner 5" />
+                    <button id="prevBanner" class="absolute left-2 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-1 text-2xl font-bold shadow hover:bg-white">‹</button>
+                    <button id="nextBanner" class="absolute right-2 top-1/2 -translate-y-1/2 bg-white/70 rounded-full px-3 py-1 text-2xl font-bold shadow hover:bg-white">›</button>
+                </div>
+            </div>
+        </section>
         <!-- Spotify Playlist Section -->
         <section class="py-16 px-4 gradient-bg">
             <div class="max-w-4xl mx-auto text-center">
@@ -161,11 +175,16 @@
         <section class="py-20 px-4 bg-white">
             <div class="max-w-4xl mx-auto">
                 <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📅 Ablauf des Tages</h2>
-                
                 <div class="timeline-container">
                     <div id="agendaItems" class="space-y-8">
                         <!-- Agenda items will be populated by JavaScript -->
                     </div>
+                </div>
+                <!-- Agenda gallery -->
+                <div class="flex flex-wrap justify-center gap-4 mt-12">
+                    <img src="public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg" class="rounded-xl shadow-md w-40 h-40 object-cover" alt="Impression 1" />
+                    <img src="public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg" class="rounded-xl shadow-md w-40 h-40 object-cover" alt="Impression 2" />
+                    <img src="public/8EF1CAF2-1C33-4677-90D0-E1F414E4E904_1_105_c.jpeg" class="rounded-xl shadow-md w-40 h-40 object-cover" alt="Impression 3" />
                 </div>
             </div>
         </section>
@@ -185,7 +204,10 @@
         <section class="py-20 px-4 bg-white">
             <div class="max-w-6xl mx-auto">
                 <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📞 Wichtige Kontakte</h2>
-                
+                <div class="flex flex-wrap justify-center gap-4 mb-8">
+                    <img src="public/9EC4BCAE-01EF-47D0-892F-CFB3BE5173A1_1_105_c.jpeg" class="rounded-full shadow-md w-32 h-32 object-cover" alt="Cathrin & Christoph" />
+                    <img src="public/FB48FE58-53AA-4495-B07B-BA6458D93EC9_1_105_c.jpeg" class="rounded-full shadow-md w-32 h-32 object-cover" alt="Friends" />
+                </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="contactItems">
                     <!-- Contact items will be populated by JavaScript -->
                 </div>
@@ -225,6 +247,26 @@
     <!-- Configuration and JavaScript -->
     <script src="config.js" ></script>
     <script src="src/main.js"></script>
+    <script>
+    // Simple banner carousel logic
+    let bannerIdx = 0;
+    const bannerCount = 5;
+    document.addEventListener('DOMContentLoaded', function() {
+        const showBanner = idx => {
+            for (let i = 0; i < bannerCount; i++) {
+                const img = document.getElementById('bannerImg' + i);
+                if (img) img.style.display = (i === idx) ? 'block' : 'none';
+            }
+        };
+        const prev = document.getElementById('prevBanner');
+        const next = document.getElementById('nextBanner');
+        if (prev && next) {
+            prev.onclick = () => { bannerIdx = (bannerIdx - 1 + bannerCount) % bannerCount; showBanner(bannerIdx); };
+            next.onclick = () => { bannerIdx = (bannerIdx + 1) % bannerCount; showBanner(bannerIdx); };
+        }
+        showBanner(bannerIdx);
+    });
+    </script>
 
     
     <!-- Debug script to check if everything loaded -->
