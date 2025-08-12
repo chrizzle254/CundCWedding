@@ -30,7 +30,7 @@ async function serverLogin(password) {
 
 async function tryRestoreSession() {
   try {
-    const res = await fetch('/.netlify/functions/get-config', {
+    const res = await fetch('https://cundcwedding.netlify.app/netlify/functions/get-config', {
       method: 'GET',
       credentials: 'include'
     });
