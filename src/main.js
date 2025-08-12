@@ -9,6 +9,58 @@ let config = null; // declare once
 //window.config = window.config || null;
 let isAuthenticated = false;
 
+async function serverLogin(password) {
+  try {
+    const res = await fetch('/.netlify/functions/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+      credentials: 'include'
+    });
+
+    if (!res.ok) throw new Error('Unauthorized');
+    const cfg = await res.json();
+    config = cfg;
+    showMainContent();
+  } catch (err) {
+    console.error('Login failed', err);
+    document.getElementById('passwordError').classList.remove('hidden');
+  }
+}
+
+async function tryRestoreSession() {
+  try {
+    const res = await fetch('/.netlify/functions/get-config', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (!res.ok) return;
+    const cfg = await res.json();
+    config = cfg;
+    showMainContent();
+  } catch (err) {
+    console.error('Session restore failed', err);
+  }
+}
+
+function showMainContent() {
+  document.getElementById('loginScreen').classList.add('hidden');
+  document.getElementById('mainContent').classList.remove('hidden');
+  document.getElementById('configOutput').textContent = JSON.stringify(config, null, 2);
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  document.getElementById('loginButton').addEventListener('click', () => {
+    const pw = document.getElementById('passwordInput').value;
+    serverLogin(pw);
+  });
+  document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('loginButton').click();
+  });
+  await tryRestoreSession();
+});
+
+
 /**
  * Password check
  * Called from button click or Enter key in input
