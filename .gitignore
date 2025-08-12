@@ -1,5 +1,5 @@
 # Configuration files with private information
-config.js
+#config.js
 .env
 
 # Dependencies
