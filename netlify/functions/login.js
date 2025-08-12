@@ -1,34 +1,23 @@
-const jwt = require('jsonwebtoken');
-
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
-  }
-
-  const body = event.body ? JSON.parse(event.body) : {};
-  const { password } = body;
-
-  let weddingConfig;
   try {
-    weddingConfig = JSON.parse(process.env.WEDDING_CONFIG || '{}');
+    const { password } = JSON.parse(event.body || '{}');
+    const correctPassword = process.env.WEDDING_PASSWORD;
+
+    if (password !== correctPassword) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ error: "Invalid password" })
+      };
+    }
+
+    // Very simple token (Base64)
+    const token = Buffer.from(`${password}:${Date.now()}`).toString('base64');
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ token })
+    };
   } catch (err) {
-    return { statusCode: 500, body: 'Server config error' };
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
   }
-
-  if (!password || password !== weddingConfig.password) {
-    return { statusCode: 401, body: JSON.stringify({ message: 'Unauthorized' }) };
-  }
-
-  const token = jwt.sign({ sub: 'wedding-guest' }, process.env.JWT_SECRET, { expiresIn: '12h' });
-  const maxAge = 12 * 60 * 60;
-  const cookie = `wedding_token=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${maxAge}`;
-
-  const publicConfig = { ...weddingConfig };
-  delete publicConfig.password;
-
-  return {
-    statusCode: 200,
-    multiValueHeaders: { 'Set-Cookie': [cookie] },
-    body: JSON.stringify(publicConfig)
-  };
 };
