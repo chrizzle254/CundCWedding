@@ -12,104 +12,140 @@
     <!-- Custom fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Custom styles -->
     <link rel="stylesheet" href="src/styles.css">
-    
-
     <style>
+        :root {
+            --deep-forest: #0b1f1c;
+            --forest-500: #1a3b38;
+            --mint-300: #b7e4c7;
+            --jade-400: #4fd1c5;
+            --gold-400: #d4af37;
+            --rose-50: #fdf2f8;
+            --sand-50: #fef3c7;
+            --ink-900: #0d1414;
+        }
+        /* Base */
         body {
-            font-family: 'Crimson Text', serif;
-            background: #f6fff7;
+            font-family: 'Montserrat', sans-serif;
+            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,209,197,0.08), transparent),
+                        radial-gradient(1000px 600px at 80% 20%, rgba(183,228,199,0.06), transparent),
+                        linear-gradient(180deg, #0a1f1c 0%, #0e2421 60%, #0a1f1c 100%);
+            color: #e6f1ef;
         }
         h1, h2, h3, h4, h5, h6 {
-            font-family: 'Playfair Display', serif;
+            font-family: 'Cormorant', serif;
+            font-weight: 600;
+            letter-spacing: 0.02em;
         }
-        .gradient-bg {
-            background: linear-gradient(135deg, #e6f9ed 0%, #b7e4c7 50%, #d4f5e9 100%);
+
+        /* Theme helpers */
+        .jungle-accent { color: var(--jade-400); text-shadow: 0 0 18px rgba(79, 209, 197, 0.28); }
+        .gradient-bg { background: linear-gradient(135deg, #112926 0%, #1b3e3a 55%, #0f2b28 100%); }
+        .glass {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+            border: 1px solid rgba(255,255,255,0.12);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
         }
-        .jungle-accent {
-            color: #228B22;
+        .btn-emerald {
+            background: linear-gradient(135deg, #228B22 0%, #6bd1b6 100%);
+            color: white;
+            transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
+            box-shadow: 0 12px 30px rgba(107, 209, 182, 0.25);
         }
-        .jungle-bg {
-            background: linear-gradient(135deg, #228B22 0%, #b7e4c7 100%);
+        .btn-emerald:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(107, 209, 182, 0.35); filter: brightness(1.02); }
+        .soft-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
         }
-        .section-fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
-        }
-        .section-fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
+
+        /* Sections reveal */
+        .section-fade-in { opacity: 0; transform: translateY(28px); transition: all .7s cubic-bezier(0.4, 0, 0.2, 1); }
+        .section-fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* Password screen */
         .password-screen {
-            background: linear-gradient(135deg, #fdf2f8 0%, #fef3c7 50%, #fef7e0 100%);
+            background: radial-gradient(800px 400px at 20% 20%, rgba(79,209,197,0.14), transparent),
+                        radial-gradient(900px 500px at 80% 20%, rgba(183,228,199,0.10), transparent),
+                        linear-gradient(135deg, #0a1f1c 0%, #122c29 50%, #1a3b38 100%);
         }
-        .spotify-player {
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-        .timeline-item {
-            position: relative;
-        }
+
+        /* Timeline bullets (kept for later) */
+        .timeline-item { position: relative; }
         .timeline-item::before {
             content: '';
-            position: absolute;
-            left: -20px;
-            top: 0;
-            width: 12px;
-            height: 12px;
-            background: #d4af37;
-            border-radius: 50%;
-            border: 3px solid #fff;
-            box-shadow: 0 0 0 3px #fef3c7;
+            position: absolute; left: -20px; top: 0;
+            width: 12px; height: 12px; background: var(--gold-400);
+            border-radius: 50%; border: 3px solid #fff;
+            box-shadow: 0 0 0 3px var(--sand-50);
         }
-        .faq-item {
-            transition: all 0.3s ease;
+
+        /* FAQ / card hovers */
+        .faq-item, .contact-card { transition: all .3s ease; }
+        .faq-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
+        .contact-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
+
+        /* Hero banners (no overlap fade) */
+        .hero-wrap { position: relative; overflow: hidden; }
+        .banner-layer {
+            position: absolute; inset: 0;
+            width: 100%; height: 100%;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.2s ease, visibility 0s linear 1.2s;
+            background-position: center; background-size: cover; background-repeat: no-repeat;
         }
-        .faq-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        .banner-layer.is-active {
+            opacity: 1; visibility: visible; transition: opacity 1.2s ease, visibility 0s;
         }
-        .contact-card {
-            transition: all 0.3s ease;
+        .banner-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(253,242,248,0.68));
+            backdrop-filter: blur(2px);
         }
-        .contact-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        .hero-gradient-bottom {
+            position: absolute; inset-inline: 0; bottom: 0; height: 40%;
+            background: linear-gradient(to top, rgba(11,31,28,0.85), rgba(11,31,28,0));
+            pointer-events: none;
         }
-        .rsvp-button {
-            background: linear-gradient(135deg, #228B22 0%, #b7e4c7 100%);
-            transition: all 0.3s ease;
+
+        /* Scroll hint */
+        .scroll-indicator {
+            animation: floatY 2.6s ease-in-out infinite;
+            opacity: .8;
         }
-        .rsvp-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(34, 139, 34, 0.3);
+        @keyframes floatY { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(8px) } }
+
+        /* Reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+            .section-fade-in, .banner-layer { transition: none !important; }
+            .scroll-indicator { animation: none !important; }
         }
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Password Protection Screen -->
+    <!-- Password Protection Screen (IDs kept as-is) -->
     <div id="passwordScreen" class="password-screen fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="text-center max-w-md w-full">
             <div class="mb-8">
-                <h1 class="text-4xl md:text-6xl font-bold text-gray-800 mb-4">👻</h1>
+                <h1 class="text-5xl md:text-6xl font-bold text-white/90 mb-2">👻</h1>
+                <p class="text-sm text-white/50">Nur für geladene Geister</p>
             </div>
-            
-            <div class="card-elegant">
-                <h3 class="text-xl font-semibold text-gray-800 mb-4">Passwort??</h3>
+            <div class="card-elegant glass rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-white mb-5">Passwort??</h3>
                 <input 
                     type="password" 
                     id="passwordInput" 
                     placeholder="Passwort eingeben..."
-                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-gold-400 focus:outline-none text-center text-lg mb-4"
+                    class="w-full px-4 py-3 rounded-lg bg-white/90 text-gray-800 outline-none focus:ring-2 focus:ring-emerald-300 text-center text-lg mb-4"
                     autocomplete="off"
                 >
                 <button 
                     id="loginButton"
-                    class="btn-primary w-full"
+                    class="btn-primary btn-emerald w-full py-3 rounded-xl font-semibold"
                 >
                     Lass mich rein!
                 </button>
@@ -119,89 +155,92 @@
 
     <!-- Main Website Content (Hidden until password is correct) -->
     <div id="mainContent" class="hidden">
-        <!-- Modern Hero Banner with Fading Background Images -->
-        <section class="relative py-24 px-4 overflow-hidden" style="background: none;">
-            <div class="absolute inset-0 w-full h-full" style="z-index:0;">
-                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(34,139,34,0.25),rgba(183,228,199,0.25)),url('public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg') center/cover no-repeat;"></div>
-                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(34,139,34,0.25),rgba(183,228,199,0.25)),url('public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg') center/cover no-repeat;opacity:0.7;mix-blend-mode:lighten;"></div>
-                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(253,242,248,0.7));backdrop-filter:blur(2px);"></div>
+        <!-- Top Navigation (non-intrusive) -->
+        <header class="fixed top-0 inset-x-0 z-30 px-4 py-3">
+            <div class="max-w-6xl mx-auto glass rounded-2xl px-5 py-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-bold jungle-accent">C ♡ C</span>
+                    <span class="hidden sm:inline text-white/60">06. Juni 2026 · Schloss Bredeneek</span>
+                </div>
+                <nav class="hidden md:flex items-center gap-6 text-white/80 font-medium">
+                    <a href="#musik" class="hover:text-white transition">Musik</a>
+                    <a href="#rsvp" class="hover:text-white transition">RSVP</a>
+                </nav>
             </div>
-            <div class="relative z-10 max-w-6xl mx-auto text-center">
-                <div class="mb-8">
+        </header>
+
+        <!-- Hero Banner with Sequential Fade (no overlap) -->
+        <section class="hero-wrap relative min-h-[80vh] pt-24 md:pt-28">
+            <div class="absolute inset-0" style="z-index:0;">
+                <!-- First banner image -->
+                <div id="bannerImage1" class="banner-layer is-active"
+                    style="background-image:
+                        linear-gradient(135deg, rgba(34,139,34,0.18), rgba(183,228,199,0.18)),
+                        url('public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg');
+                    ">
+                </div>
+                <!-- Second banner image -->
+                <div id="bannerImage2" class="banner-layer"
+                    style="background-image:
+                        linear-gradient(135deg, rgba(34,139,34,0.18), rgba(183,228,199,0.18)),
+                        url('public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg');
+                    ">
+                </div>
+                <!-- Overlay for readability -->
+                <div class="banner-overlay"></div>
+                <div class="hero-gradient-bottom"></div>
+            </div>
+
+            <div class="relative z-10 max-w-6xl mx-auto px-4 text-center">
+                <div class="mb-8 section-fade-in">
                     <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold jungle-accent drop-shadow mb-6 leading-tight">
                         Cathrin<br>&<br>Christoph
                     </h1>
                 </div>
-                <div class="text-2xl md:text-3xl jungle-accent mb-8 drop-shadow">
+                <div class="text-2xl md:text-3xl jungle-accent mb-6 drop-shadow section-fade-in">
                     <p class="font-light">machen Party!</p>
                 </div>
-                <div class="text-xl md:text-2xl jungle-accent mb-12 drop-shadow">
+                <div class="text-xl md:text-2xl jungle-accent mb-12 drop-shadow section-fade-in">
                     <p class="font-semibold">am 06. Juni 2026</p>
                     <p class="font-light">in Schloss Bredeneek</p>
                 </div>
-            </div>
-        </section>
-        <!-- Spotify Playlist Section -->
-        <section class="relative py-16 px-4 gradient-bg overflow-hidden" style="background: linear-gradient(135deg,rgba(254,243,199,0.7),rgba(253,242,248,0.7)), url('public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg') center/cover no-repeat;">
-            <div class="absolute inset-0 bg-black/20 backdrop-blur-sm"></div>
-            <div class="relative z-10 max-w-4xl mx-auto text-center">
-                <div class="spotify-container">
-                    <iframe 
-                        id="spotifyPlayer"
-                        style="border-radius:12px" 
-                        src="https://open.spotify.com/embed/playlist/37i9dQZF1DX5Vy6DFOcx00?utm_source=generator" 
-                        width="100%" 
-                        height="352" 
-                        frameborder="0" 
-                        allowfullscreen="" 
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-                        loading="lazy">
-                    </iframe>
+
+                <div class="flex items-center justify-center gap-2 text-white/70 scroll-indicator">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M12 5v14m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span>Scroll</span>
                 </div>
             </div>
         </section>
 
-        <!-- Agenda Section -->
-        <!--
-        <section class="relative py-20 px-4 bg-white overflow-hidden" style="background: linear-gradient(135deg,rgba(255,255,255,0.9),rgba(254,243,199,0.5)), url('public/8EF1CAF2-1C33-4677-90D0-E1F414E4E904_1_105_c.jpeg') center/cover no-repeat;">
-            <div class="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
-            <div class="relative z-10 max-w-4xl mx-auto">
-                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📅 Ablauf des Tages</h2>
-                <div class="timeline-container">
-                    <div id="agendaItems" class="space-y-8"/>
+        <!-- Musik / Spotify Section -->
+        <section id="musik" class="relative py-20 px-4">
+            <div class="absolute inset-0 -z-10 opacity-[0.18]"
+                 style="background: radial-gradient(900px 500px at 10% 10%, rgba(183,228,199,0.35), transparent),
+                                 radial-gradient(800px 480px at 90% 20%, rgba(79,209,197,0.35), transparent);">
+            </div>
+            <div class="max-w-4xl mx-auto text-center section-fade-in">
+                <div class="glass rounded-3xl p-4 md:p-6">
+                    <div class="rounded-2xl overflow-hidden shadow-2xl">
+                        <iframe 
+                            id="spotifyPlayer"
+                            style="border:0"
+                            src="https://open.spotify.com/embed/playlist/37i9dQZF1DX5Vy6DFOcx00?utm_source=generator" 
+                            width="100%" 
+                            height="380" 
+                            frameborder="0" 
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+                            loading="lazy">
+                        </iframe>
+                    </div>
                 </div>
             </div>
         </section>
-        -->
-
-        
-        <!-- FAQ Section -->
-        <!--
-        <section class="relative py-20 px-4 gradient-bg overflow-hidden" style="background: linear-gradient(135deg,rgba(253,242,248,0.9),rgba(254,243,199,0.5)), url('public/9EC4BCAE-01EF-47D0-892F-CFB3BE5173A1_1_105_c.jpeg') center/cover no-repeat;">
-            <div class="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
-            <div class="relative z-10 max-w-4xl mx-auto">
-                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">❓ Häufige Fragen</h2>
-                <div class="space-y-6" id="faqItems" />
-            </div>
-        </section>
-        -->
-
-        <!-- Important Contacts Section -->
-        <!--
-        <section class="relative py-20 px-4 bg-white overflow-hidden" style="background: linear-gradient(135deg,rgba(255,255,255,0.9),rgba(253,242,248,0.5)), url('public/FB48FE58-53AA-4495-B07B-BA6458D93EC9_1_105_c.jpeg') center/cover no-repeat;">
-            <div class="absolute inset-0 bg-black/10 backdrop-blur-sm"></div>
-            <div class="relative z-10 max-w-6xl mx-auto">
-                <h2 class="text-4xl md:text-5xl font-bold text-center text-gray-800 mb-16">📞 Wichtige Kontakte</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="contactItems" />
-            </div>
-        </section>
-        -->
 
         <!-- RSVP Section -->
-        <section class="py-20 px-4 gradient-bg">
-            <div class="max-w-4xl mx-auto text-center">
-                <h2 class="text-4xl md:text-5xl font-bold text-gray-800 mb-8">💌 RSVP</h2>
-                <p class="text-xl text-gray-600 mb-12 max-w-2xl mx-auto">
+        <section id="rsvp" class="py-20 px-4 gradient-bg">
+            <div class="max-w-4xl mx-auto text-center section-fade-in">
+                <h2 class="text-4xl md:text-5xl font-bold text-white mb-6">💌 RSVP</h2>
+                <p class="text-lg md:text-xl text-white/80 mb-10 max-w-2xl mx-auto">
                     Gib bitte Bescheid, ob du dabei bist und wie viele Dates du mitbringst.
                 </p>
                 
@@ -210,34 +249,115 @@
                     href="#" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    class="rsvp-button inline-block text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg hover-lift"
+                    class="btn-emerald inline-block font-bold py-4 px-10 rounded-full text-lg md:text-xl"
                 >
                     Jetzt antworten →
                 </a>
+
+                <div class="mt-10 soft-divider"></div>
+                <p class="text-white/60 mt-6 text-sm">
+                    Wir freuen uns sehr, mit dir zu feiern!
+                </p>
             </div>
         </section>
 
         <!-- Footer -->
-        <footer class="py-12 px-4 bg-gray-800 text-white text-center">
+        <footer class="py-12 px-4 bg-[#0b1514] text-white/90 text-center">
             <div class="max-w-4xl mx-auto">
-                <p class="text-lg mb-4">Cathrin & Christoph</p>
-                <p class="text-gray-400">06. Juni 2026 • Schloss Bredeneek</p>
-                <p class="text-sm text-gray-500 mt-6">Mit viel Liebe ge-vibecoded</p>
+                <p class="text-lg mb-2">Cathrin & Christoph</p>
+                <p class="text-white/50">06. Juni 2026 • Schloss Bredeneek</p>
+                <div class="soft-divider my-6"></div>
+                <p class="text-xs text-white/40">Mit viel Liebe ge-vibecoded</p>
             </div>
         </footer>
     </div>
 
     <!-- JavaScript -->
+    <script src="config.js"></script>
     <script src="src/main.js"></script>
 
-    
+    <!-- Section reveal on scroll -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const reveal = () => {
+                document.querySelectorAll('.section-fade-in').forEach(el => {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top < window.innerHeight * 0.85) el.classList.add('visible');
+                });
+            };
+            reveal();
+            window.addEventListener('scroll', reveal, { passive: true });
+        });
+    </script>
+
+    <!-- Banner sequential fade (no overlap) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const img1 = document.getElementById('bannerImage1');
+            const img2 = document.getElementById('bannerImage2');
+            if (!img1 || !img2) return;
+
+            const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            // Ensure initial states
+            img1.classList.add('is-active');
+            img2.classList.remove('is-active');
+
+            // Helper to wait for a transition to finish
+            const waitTransition = (el, prop = 'opacity') =>
+                new Promise(resolve => {
+                    const onEnd = (e) => {
+                        if (e.propertyName === prop) {
+                            el.removeEventListener('transitionend', onEnd);
+                            resolve();
+                        }
+                    };
+                    el.addEventListener('transitionend', onEnd);
+                });
+
+            // Single switch (fade out then in), no overlap
+            const switchOnce = async () => {
+                // Fade out first
+                img1.classList.remove('is-active');
+                await waitTransition(img1); // wait until opacity 0 and hidden
+                // Tiny gap to ensure no overlap visual
+                await new Promise(r => setTimeout(r, 80));
+                // Fade in second
+                img2.classList.add('is-active');
+                await waitTransition(img2);
+            };
+
+            // Optional loop that keeps alternating without overlap
+            const startLoop = async () => {
+                let current = img1, next = img2;
+                // Initial hold before first transition (similar to your 2.2s)
+                await new Promise(r => setTimeout(r, 2200));
+                while (true) {
+                    // Display duration
+                    await new Promise(r => setTimeout(r, 3800));
+                    // Fade out current
+                    current.classList.remove('is-active');
+                    await waitTransition(current);
+                    await new Promise(r => setTimeout(r, 120)); // gap
+                    // Fade in next
+                    next.classList.add('is-active');
+                    await waitTransition(next);
+                    // swap
+                    const tmp = current; current = next; next = tmp;
+                    if (prefersReduced) break; // do just one switch for reduced motion
+                }
+            };
+
+            // Start loop (non-overlapping)
+            startLoop();
+        });
+    </script>
+
     <!-- Debug script to check if everything loaded -->
     <script>
         console.log('HTML loaded');
         console.log('Config loaded:', typeof window.weddingConfig);
         console.log('Main JS loaded:', typeof checkPassword);
-        
-        // Update debug info
         document.addEventListener('DOMContentLoaded', function() {
             const debugInfo = document.getElementById('debugInfo');
             if (debugInfo) {
@@ -246,4 +366,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

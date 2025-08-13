@@ -21,17 +21,11 @@ function checkPassword() {
         return;
     }
     const enteredPassword = input.value.trim();
-    fetch('/.netlify/functions/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password: enteredPassword })
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        // Local: check password directly
+        if (config && enteredPassword === config.password) {
             console.log("✅ Password correct, showing main content");
             isAuthenticated = true;
-            config = data.config;
             configLoaded = true;
             localStorage.setItem("weddingAuthToken", btoa(enteredPassword));
             showMainContent();
@@ -41,11 +35,34 @@ function checkPassword() {
             if (errorMsg) errorMsg.classList.remove("hidden");
             input.value = "";
         }
-    })
-    .catch(err => {
-        console.error("❌ Error during authentication", err);
-        alert("Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.");
-    });
+    } else {
+        // Production: use Netlify Function
+        fetch('/.netlify/functions/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: enteredPassword })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log("✅ Password correct, showing main content");
+                isAuthenticated = true;
+                config = data.config;
+                configLoaded = true;
+                localStorage.setItem("weddingAuthToken", btoa(enteredPassword));
+                showMainContent();
+            } else {
+                console.warn("❌ Incorrect password");
+                const errorMsg = document.getElementById("passwordError");
+                if (errorMsg) errorMsg.classList.remove("hidden");
+                input.value = "";
+            }
+        })
+        .catch(err => {
+            console.error("❌ Error during authentication", err);
+            alert("Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.");
+        });
+    }
 }
 
 /**
@@ -301,18 +318,31 @@ function showConfigError() {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("📄 DOMContentLoaded — Initializing...");
     setupEventListeners();
-    fetch('/.netlify/functions/config')
-        .then(res => res.json())
-        .then(cfg => {
-            config = cfg;
+    // Use local config.js if running on localhost
+    if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+        if (window.weddingConfig) {
+            config = window.weddingConfig;
             configLoaded = true;
-            console.log("🔧 Config loaded from Netlify Function:", config);
+            console.log("🔧 Config loaded from local config.js:", config);
             checkAuthenticationStatus();
-        })
-        .catch(err => {
-            console.error("❌ Config not available from Netlify Function.", err);
+        } else {
+            console.error("❌ Local config.js not available.");
             showConfigError();
-        });
+        }
+    } else {
+        fetch('/.netlify/functions/config')
+            .then(res => res.json())
+            .then(cfg => {
+                config = cfg;
+                configLoaded = true;
+                console.log("🔧 Config loaded from Netlify Function:", config);
+                checkAuthenticationStatus();
+            })
+            .catch(err => {
+                console.error("❌ Config not available from Netlify Function.", err);
+                showConfigError();
+            });
+    }
 });
 
 // Export globals for HTML inline calls
