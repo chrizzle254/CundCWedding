@@ -13,42 +13,7 @@ let isAuthenticated = false;
  * Password check
  * Called from button click or Enter key in input
  */
-function checkPassword() {
-    console.log("🔑 checkPassword() called");
-
-    const input = document.getElementById("passwordInput");
-    if (!input) {
-        console.error("❌ Password input field not found in DOM");
-        return;
-    }
-
-    const enteredPassword = input.value.trim();
-
-    if (!config || !config.password) {
-        console.error("❌ Config not loaded or password missing");
-        alert("Error: Configuration not loaded.");
-        return;
-    }
-
-    if (enteredPassword === config.password) {
-        console.log("✅ Password correct, showing main content");
-        isAuthenticated = true;
-
-        // Save auth token for session persistence
-        localStorage.setItem("weddingAuthToken", generateAuthToken());
-
-        showMainContent();
-    } else {
-        console.warn("❌ Incorrect password");
-        // Show error message on screen instead of alert for better UX
-        const errorMsg = document.getElementById("passwordError");
-        if (errorMsg) {
-            errorMsg.classList.remove("hidden");
-        }
-        // Optional: clear input
-        input.value = "";
-    }
-}
+// ...existing code...
 
 /**
  * Attach event listeners to input and button
@@ -71,34 +36,12 @@ function setupEventListeners() {
 /**
  * Restore authentication status from localStorage
  */
-function checkAuthenticationStatus() {
-    if (!config) {
-        showConfigError();
-        return;
-    }
-
-    const authToken = localStorage.getItem("weddingAuthToken");
-    if (authToken && authToken === generateAuthToken()) {
-        console.log("User already authenticated.");
-        isAuthenticated = true;
-        showMainContent();
-    } else {
-        console.log("User not authenticated.");
-        // Show password screen
-        const ps = document.getElementById("passwordScreen");
-        const mc = document.getElementById("mainContent");
-        if (ps) ps.style.display = "flex";
-        if (mc) mc.style.display = "none";
-    }
-}
+// ...existing code...
 
 /**
  * Generate a simple auth token (not secure, just casual protection)
  */
-function generateAuthToken() {
-    // Token changes daily to require fresh login each day
-    return btoa(config.password + "_" + new Date().toDateString());
-}
+// No longer needed, token is just btoa(password)
 
 /**
  * Show main content and hide password screen with animation
