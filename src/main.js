@@ -69,7 +69,38 @@ function setupEventListeners() {
 /**
  * Restore authentication status from localStorage
  */
-// ...existing code...
+function checkAuthenticationStatus() {
+    const authToken = localStorage.getItem("weddingAuthToken");
+    if (authToken) {
+        // Try to auto-login with stored token
+        fetch('/.netlify/functions/auth', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: atob(authToken) })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                isAuthenticated = true;
+                config = data.config;
+                configLoaded = true;
+                showMainContent();
+            } else {
+                showPasswordScreen();
+            }
+        })
+        .catch(() => showPasswordScreen());
+    } else {
+        showPasswordScreen();
+    }
+}
+
+function showPasswordScreen() {
+    const ps = document.getElementById("passwordScreen");
+    const mc = document.getElementById("mainContent");
+    if (ps) ps.style.display = "flex";
+    if (mc) mc.style.display = "none";
+}
 
 /**
  * Generate a simple auth token (not secure, just casual protection)
