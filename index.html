@@ -18,108 +18,100 @@
     <link rel="stylesheet" href="src/styles.css">
     <style>
         :root {
-            --deep-forest: #0b1f1c;
-            --forest-500: #1a3b38;
-            --mint-300: #b7e4c7;
-            --jade-400: #4fd1c5;
-            --gold-400: #d4af37;
-            --rose-50: #fdf2f8;
-            --sand-50: #fef3c7;
-            --ink-900: #0d1414;
+            /* Schloss-inspired palette: cream, pine green, brick, muted gold */
+            --cream-50: #f7f3ec;
+            --cream-100: #f0eae0;
+            --cream-200: #e8e0d3;
+            --pine-800: #25463f;
+            --pine-900: #1b3832;
+            --pine-950: #122723;
+            --brick-500: #9e5744;
+            --gold-400: #c8a96b;
+            --ink-900: #0f1715;
         }
-        /* Base */
+
         body {
             font-family: 'Montserrat', sans-serif;
-            background: radial-gradient(1200px 600px at 20% 10%, rgba(79,209,197,0.08), transparent),
-                        radial-gradient(1000px 600px at 80% 20%, rgba(183,228,199,0.06), transparent),
-                        linear-gradient(180deg, #0a1f1c 0%, #0e2421 60%, #0a1f1c 100%);
-            color: #e6f1ef;
+            color: #1f2a27;
+            background:
+                radial-gradient(1100px 600px at 15% 15%, rgba(200,169,107,0.10), transparent),
+                radial-gradient(1000px 600px at 85% 10%, rgba(37,70,63,0.10), transparent),
+                linear-gradient(180deg, var(--cream-50) 0%, var(--cream-100) 50%, var(--cream-50) 100%);
         }
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Cormorant', serif;
             font-weight: 600;
-            letter-spacing: 0.02em;
+            letter-spacing: 0.01em;
+            color: var(--pine-900);
         }
 
-        /* Theme helpers */
-        .jungle-accent { color: var(--jade-400); text-shadow: 0 0 18px rgba(79, 209, 197, 0.28); }
-        .gradient-bg { background: linear-gradient(135deg, #112926 0%, #1b3e3a 55%, #0f2b28 100%); }
+        /* Accents and theme helpers */
+        .jungle-accent { /* repurposed to a refined muted-gold accent */
+            color: var(--gold-400);
+            text-shadow: 0 0 14px rgba(200,169,107,0.25);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, var(--pine-900) 0%, var(--pine-950) 100%);
+        }
         .glass {
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
-            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
-            border: 1px solid rgba(255,255,255,0.12);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35));
+            border: 1px solid rgba(27,56,50,0.15);
+            box-shadow: 0 12px 40px rgba(27,56,50,0.12);
         }
         .btn-emerald {
-            background: linear-gradient(135deg, #228B22 0%, #6bd1b6 100%);
-            color: white;
+            background: linear-gradient(135deg, var(--pine-900), var(--brick-500));
+            color: #fff;
             transition: transform .25s ease, box-shadow .25s ease, filter .25s ease;
-            box-shadow: 0 12px 30px rgba(107, 209, 182, 0.25);
+            box-shadow: 0 12px 26px rgba(27,56,50,0.25);
         }
-        .btn-emerald:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(107, 209, 182, 0.35); filter: brightness(1.02); }
+        .btn-emerald:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(27,56,50,0.35); filter: brightness(1.02); }
         .soft-divider {
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            background: linear-gradient(90deg, transparent, rgba(27,56,50,0.18), transparent);
         }
 
-        /* Sections reveal */
-        .section-fade-in { opacity: 0; transform: translateY(28px); transition: all .7s cubic-bezier(0.4, 0, 0.2, 1); }
+        /* Section reveals */
+        .section-fade-in { opacity: 0; transform: translateY(26px); transition: all .7s cubic-bezier(0.4, 0, 0.2, 1); }
         .section-fade-in.visible { opacity: 1; transform: translateY(0); }
 
-        /* Password screen */
+        /* Password screen (no ghost, refined) */
         .password-screen {
-            background: radial-gradient(800px 400px at 20% 20%, rgba(79,209,197,0.14), transparent),
-                        radial-gradient(900px 500px at 80% 20%, rgba(183,228,199,0.10), transparent),
-                        linear-gradient(135deg, #0a1f1c 0%, #122c29 50%, #1a3b38 100%);
+            background:
+                radial-gradient(900px 460px at 15% 20%, rgba(37,70,63,0.14), transparent),
+                radial-gradient(1000px 520px at 85% 20%, rgba(200,169,107,0.12), transparent),
+                linear-gradient(135deg, var(--cream-100) 0%, var(--cream-200) 100%);
         }
 
-        /* Timeline bullets (kept for later) */
-        .timeline-item { position: relative; }
-        .timeline-item::before {
-            content: '';
-            position: absolute; left: -20px; top: 0;
-            width: 12px; height: 12px; background: var(--gold-400);
-            border-radius: 50%; border: 3px solid #fff;
-            box-shadow: 0 0 0 3px var(--sand-50);
-        }
-
-        /* FAQ / card hovers */
-        .faq-item, .contact-card { transition: all .3s ease; }
-        .faq-item:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
-        .contact-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.25); }
-
-        /* Hero banners (no overlap fade) */
+        /* Hero */
         .hero-wrap { position: relative; overflow: hidden; }
         .banner-layer {
             position: absolute; inset: 0;
             width: 100%; height: 100%;
             opacity: 0; visibility: hidden;
             transition: opacity 1.2s ease, visibility 0s linear 1.2s;
-            background-position: center; background-size: cover; background-repeat: no-repeat;
+            object-fit: cover; object-position: center;
+            filter: saturate(0.92) contrast(1.02);
         }
         .banner-layer.is-active {
             opacity: 1; visibility: visible; transition: opacity 1.2s ease, visibility 0s;
         }
         .banner-overlay {
             position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.72), rgba(253,242,248,0.68));
+            background: linear-gradient(135deg, rgba(247,243,236,0.86), rgba(240,234,224,0.82));
             backdrop-filter: blur(2px);
         }
         .hero-gradient-bottom {
-            position: absolute; inset-inline: 0; bottom: 0; height: 40%;
-            background: linear-gradient(to top, rgba(11,31,28,0.85), rgba(11,31,28,0));
+            position: absolute; inset-inline: 0; bottom: 0; height: 38%;
+            background: linear-gradient(to top, rgba(247,243,236,0.95), rgba(247,243,236,0));
             pointer-events: none;
         }
 
         /* Scroll hint */
-        .scroll-indicator {
-            animation: floatY 2.6s ease-in-out infinite;
-            opacity: .8;
-        }
+        .scroll-indicator { animation: floatY 2.6s ease-in-out infinite; opacity: .8; color: var(--pine-800); }
         @keyframes floatY { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(8px) } }
 
-        /* Reduced motion */
         @media (prefers-reduced-motion: reduce) {
             .section-fade-in, .banner-layer { transition: none !important; }
             .scroll-indicator { animation: none !important; }
@@ -127,27 +119,27 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <!-- Password Protection Screen (IDs kept as-is) -->
+    <!-- Password Protection Screen -->
     <div id="passwordScreen" class="password-screen fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="text-center max-w-md w-full">
-            <div class="mb-8">
-                <h1 class="text-5xl md:text-6xl font-bold text-white/90 mb-2">👻</h1>
-                <p class="text-sm text-white/50">Nur für geladene Geister</p>
+            <div class="mb-6">
+                <h1 class="text-3xl md:text-4xl font-bold mb-2">Zugang</h1>
+                <p class="text-sm text-gray-600">Bitte Passwort eingeben</p>
             </div>
             <div class="card-elegant glass rounded-2xl p-6">
-                <h3 class="text-xl font-semibold text-white mb-5">Passwort??</h3>
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Passwort</h3>
                 <input 
                     type="password" 
                     id="passwordInput" 
                     placeholder="Passwort eingeben..."
-                    class="w-full px-4 py-3 rounded-lg bg-white/90 text-gray-800 outline-none focus:ring-2 focus:ring-emerald-300 text-center text-lg mb-4"
+                    class="w-full px-4 py-3 rounded-lg bg-white text-gray-800 outline-none focus:ring-2 focus:ring-[rgba(27,56,50,0.35)] text-center text-lg mb-4"
                     autocomplete="off"
                 >
                 <button 
                     id="loginButton"
                     class="btn-primary btn-emerald w-full py-3 rounded-xl font-semibold"
                 >
-                    Lass mich rein!
+                    Öffnen
                 </button>
             </div>
         </div>
@@ -155,16 +147,16 @@
 
     <!-- Main Website Content (Hidden until password is correct) -->
     <div id="mainContent" class="hidden">
-        <!-- Top Navigation (non-intrusive) -->
+        <!-- Top Navigation -->
         <header class="fixed top-0 inset-x-0 z-30 px-4 py-3">
             <div class="max-w-6xl mx-auto glass rounded-2xl px-5 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="text-2xl font-bold jungle-accent">C ♡ C</span>
-                    <span class="hidden sm:inline text-white/60">06. Juni 2026 · Schloss Bredeneek</span>
+                    <span class="text-2xl font-bold" style="color: var(--pine-900);">C&C</span>
+                    <span class="hidden sm:inline text-[color:rgba(27,56,50,0.75)]">06. Juni 2026 · Schloss Bredeneek</span>
                 </div>
-                <nav class="hidden md:flex items-center gap-6 text-white/80 font-medium">
-                    <a href="#musik" class="hover:text-white transition">Musik</a>
-                    <a href="#rsvp" class="hover:text-white transition">RSVP</a>
+                <nav class="hidden md:flex items-center gap-6 text-[color:rgba(27,56,50,0.8)] font-medium">
+                    <a href="#musik" class="hover:text-[color:rgba(27,56,50,1)] transition">Musik</a>
+                    <a href="#rsvp" class="hover:text-[color:rgba(27,56,50,1)] transition">RSVP</a>
                 </nav>
             </div>
         </header>
@@ -172,20 +164,21 @@
         <!-- Hero Banner with Sequential Fade (no overlap) -->
         <section class="hero-wrap relative min-h-[80vh] pt-24 md:pt-28">
             <div class="absolute inset-0" style="z-index:0;">
-                <!-- First banner image -->
-                <div id="bannerImage1" class="banner-layer is-active"
-                    style="background-image:
-                        linear-gradient(135deg, rgba(34,139,34,0.18), rgba(183,228,199,0.18)),
-                        url('public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg');
-                    ">
-                </div>
+                <!-- First banner image as real <img> for more reliable loading -->
+                <img id="bannerImage1" class="banner-layer is-active"
+                     src="./public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg"
+                     alt=""
+                     fetchpriority="high"
+                     decoding="async"
+                     onerror="this.style.display='none';"
+                />
                 <!-- Second banner image -->
-                <div id="bannerImage2" class="banner-layer"
-                    style="background-image:
-                        linear-gradient(135deg, rgba(34,139,34,0.18), rgba(183,228,199,0.18)),
-                        url('public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg');
-                    ">
-                </div>
+                <img id="bannerImage2" class="banner-layer"
+                     src="./public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg"
+                     alt=""
+                     decoding="async"
+                     onerror="this.style.display='none';"
+                />
                 <!-- Overlay for readability -->
                 <div class="banner-overlay"></div>
                 <div class="hero-gradient-bottom"></div>
@@ -198,16 +191,16 @@
                     </h1>
                 </div>
                 <div class="text-2xl md:text-3xl jungle-accent mb-6 drop-shadow section-fade-in">
-                    <p class="font-light">machen Party!</p>
+                    <p class="font-light" style="color: var(--pine-800); text-shadow: none;">machen Party!</p>
                 </div>
-                <div class="text-xl md:text-2xl jungle-accent mb-12 drop-shadow section-fade-in">
+                <div class="text-xl md:text-2xl mb-12 drop-shadow section-fade-in" style="color: var(--pine-800); text-shadow: none;">
                     <p class="font-semibold">am 06. Juni 2026</p>
                     <p class="font-light">in Schloss Bredeneek</p>
                 </div>
 
-                <div class="flex items-center justify-center gap-2 text-white/70 scroll-indicator">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="opacity-80"><path d="M12 5v14m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    <span>Scroll</span>
+                <div class="flex items-center justify-center gap-2 scroll-indicator">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 5v14m0 0l-5-5m5 5l5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span class="text-sm">Scroll</span>
                 </div>
             </div>
         </section>
@@ -215,8 +208,8 @@
         <!-- Musik / Spotify Section -->
         <section id="musik" class="relative py-20 px-4">
             <div class="absolute inset-0 -z-10 opacity-[0.18]"
-                 style="background: radial-gradient(900px 500px at 10% 10%, rgba(183,228,199,0.35), transparent),
-                                 radial-gradient(800px 480px at 90% 20%, rgba(79,209,197,0.35), transparent);">
+                 style="background: radial-gradient(900px 500px at 10% 10%, rgba(27,56,50,0.25), transparent),
+                                 radial-gradient(800px 480px at 90% 20%, rgba(200,169,107,0.35), transparent);">
             </div>
             <div class="max-w-4xl mx-auto text-center section-fade-in">
                 <div class="glass rounded-3xl p-4 md:p-6">
@@ -224,7 +217,7 @@
                         <iframe 
                             id="spotifyPlayer"
                             style="border:0"
-                            src="https://open.spotify.com/embed/playlist/37i9dQZF1DX5Vy6DFOcx00?utm_source=generator" 
+                            src="" 
                             width="100%" 
                             height="380" 
                             frameborder="0" 
@@ -255,19 +248,19 @@
                 </a>
 
                 <div class="mt-10 soft-divider"></div>
-                <p class="text-white/60 mt-6 text-sm">
+                <p class="text-white/70 mt-6 text-sm">
                     Wir freuen uns sehr, mit dir zu feiern!
                 </p>
             </div>
         </section>
 
         <!-- Footer -->
-        <footer class="py-12 px-4 bg-[#0b1514] text-white/90 text-center">
+        <footer class="py-12 px-4" style="background: linear-gradient(180deg, var(--cream-100), var(--cream-200)); color: var(--pine-900); text-align: center;">
             <div class="max-w-4xl mx-auto">
                 <p class="text-lg mb-2">Cathrin & Christoph</p>
-                <p class="text-white/50">06. Juni 2026 • Schloss Bredeneek</p>
+                <p class="text-[color:rgba(27,56,50,0.75)]">06. Juni 2026 • Schloss Bredeneek</p>
                 <div class="soft-divider my-6"></div>
-                <p class="text-xs text-white/40">Mit viel Liebe ge-vibecoded</p>
+                <p class="text-xs text-[color:rgba(27,56,50,0.65)]">Mit viel Liebe ge-vibecoded</p>
             </div>
         </footer>
     </div>
@@ -290,6 +283,16 @@
         });
     </script>
 
+    <!-- Set Spotify playlist from config -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const spotifyPlayer = document.getElementById('spotifyPlayer');
+            if (spotifyPlayer && window.weddingConfig && window.weddingConfig.spotifyPlaylistUrl) {
+                spotifyPlayer.src = window.weddingConfig.spotifyPlaylistUrl;
+            }
+        });
+    </script>
+
     <!-- Banner sequential fade (no overlap) -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -303,7 +306,6 @@
             img1.classList.add('is-active');
             img2.classList.remove('is-active');
 
-            // Helper to wait for a transition to finish
             const waitTransition = (el, prop = 'opacity') =>
                 new Promise(resolve => {
                     const onEnd = (e) => {
@@ -315,40 +317,33 @@
                     el.addEventListener('transitionend', onEnd);
                 });
 
-            // Single switch (fade out then in), no overlap
-            const switchOnce = async () => {
-                // Fade out first
-                img1.classList.remove('is-active');
-                await waitTransition(img1); // wait until opacity 0 and hidden
-                // Tiny gap to ensure no overlap visual
-                await new Promise(r => setTimeout(r, 80));
-                // Fade in second
-                img2.classList.add('is-active');
-                await waitTransition(img2);
-            };
+            // If any image fails (display:none from onerror), gracefully avoid cycling to it.
+            const isUsable = (el) => !!el && el.style.display !== 'none';
 
-            // Optional loop that keeps alternating without overlap
             const startLoop = async () => {
-                let current = img1, next = img2;
-                // Initial hold before first transition (similar to your 2.2s)
+                // Initial hold before first transition (similar to your original timing)
                 await new Promise(r => setTimeout(r, 2200));
+
+                // Choose active pair; if one is missing, stop looping (overlay keeps hero readable).
+                if (!isUsable(img1) && !isUsable(img2)) return;
+                if (!isUsable(img1) && isUsable(img2)) { img2.classList.add('is-active'); return; }
+                if (isUsable(img1) && !isUsable(img2)) { img1.classList.add('is-active'); return; }
+
+                let current = img1, next = img2;
+
                 while (true) {
-                    // Display duration
                     await new Promise(r => setTimeout(r, 3800));
-                    // Fade out current
                     current.classList.remove('is-active');
                     await waitTransition(current);
-                    await new Promise(r => setTimeout(r, 120)); // gap
-                    // Fade in next
+                    await new Promise(r => setTimeout(r, 120)); // gap to avoid overlap
                     next.classList.add('is-active');
                     await waitTransition(next);
-                    // swap
+
                     const tmp = current; current = next; next = tmp;
-                    if (prefersReduced) break; // do just one switch for reduced motion
+                    if (prefersReduced) break; // single switch for reduced motion
                 }
             };
 
-            // Start loop (non-overlapping)
             startLoop();
         });
     </script>
