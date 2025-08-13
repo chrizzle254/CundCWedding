@@ -13,7 +13,40 @@ let isAuthenticated = false;
  * Password check
  * Called from button click or Enter key in input
  */
-// ...existing code...
+function checkPassword() {
+    console.log("🔑 checkPassword() called");
+    const input = document.getElementById("passwordInput");
+    if (!input) {
+        console.error("❌ Password input field not found in DOM");
+        return;
+    }
+    const enteredPassword = input.value.trim();
+    fetch('/.netlify/functions/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: enteredPassword })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            console.log("✅ Password correct, showing main content");
+            isAuthenticated = true;
+            config = data.config;
+            configLoaded = true;
+            localStorage.setItem("weddingAuthToken", btoa(enteredPassword));
+            showMainContent();
+        } else {
+            console.warn("❌ Incorrect password");
+            const errorMsg = document.getElementById("passwordError");
+            if (errorMsg) errorMsg.classList.remove("hidden");
+            input.value = "";
+        }
+    })
+    .catch(err => {
+        console.error("❌ Error during authentication", err);
+        alert("Fehler bei der Anmeldung. Bitte versuchen Sie es erneut.");
+    });
+}
 
 /**
  * Attach event listeners to input and button
