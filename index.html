@@ -21,12 +21,19 @@
     <style>
         body {
             font-family: 'Crimson Text', serif;
+            background: #f6fff7;
         }
         h1, h2, h3, h4, h5, h6 {
             font-family: 'Playfair Display', serif;
         }
         .gradient-bg {
-            background: linear-gradient(135deg, #fdf2f8 0%, #fef3c7 50%, #fef7e0 100%);
+            background: linear-gradient(135deg, #e6f9ed 0%, #b7e4c7 50%, #d4f5e9 100%);
+        }
+        .jungle-accent {
+            color: #228B22;
+        }
+        .jungle-bg {
+            background: linear-gradient(135deg, #228B22 0%, #b7e4c7 100%);
         }
         .section-fade-in {
             opacity: 0;
@@ -74,12 +81,12 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
         }
         .rsvp-button {
-            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            background: linear-gradient(135deg, #228B22 0%, #b7e4c7 100%);
             transition: all 0.3s ease;
         }
         .rsvp-button:hover {
             transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 15px 35px rgba(34, 139, 34, 0.3);
         }
     </style>
 </head>
@@ -112,19 +119,23 @@
 
     <!-- Main Website Content (Hidden until password is correct) -->
     <div id="mainContent" class="hidden">
-        <!-- Modern Hero Banner with Background Image -->
-        <section class="relative py-24 px-4 overflow-hidden" style="background: linear-gradient(135deg,rgba(255,255,255,0.7),rgba(253,242,248,0.7)), url('public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg') center/cover no-repeat;">
-            <div class="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
+        <!-- Modern Hero Banner with Fading Background Images -->
+        <section class="relative py-24 px-4 overflow-hidden" style="background: none;">
+            <div class="absolute inset-0 w-full h-full" style="z-index:0;">
+                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(34,139,34,0.25),rgba(183,228,199,0.25)),url('public/5768B774-B183-4E5F-AC98-D7E15DFF6A5B_1_105_c.jpeg') center/cover no-repeat;"></div>
+                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(34,139,34,0.25),rgba(183,228,199,0.25)),url('public/87D57C71-45DA-44B5-ACC7-36D3FD9A57BD_1_105_c.jpeg') center/cover no-repeat;opacity:0.7;mix-blend-mode:lighten;"></div>
+                <div style="position:absolute;inset:0;width:100%;height:100%;background:linear-gradient(135deg,rgba(255,255,255,0.7),rgba(253,242,248,0.7));backdrop-filter:blur(2px);"></div>
+            </div>
             <div class="relative z-10 max-w-6xl mx-auto text-center">
                 <div class="mb-8">
-                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold text-white drop-shadow mb-6 leading-tight">
+                    <h1 class="text-5xl md:text-7xl lg:text-8xl font-bold jungle-accent drop-shadow mb-6 leading-tight">
                         Cathrin<br>&<br>Christoph
                     </h1>
                 </div>
-                <div class="text-2xl md:text-3xl text-white mb-8 drop-shadow">
+                <div class="text-2xl md:text-3xl jungle-accent mb-8 drop-shadow">
                     <p class="font-light">machen Party!</p>
                 </div>
-                <div class="text-xl md:text-2xl text-white mb-12 drop-shadow">
+                <div class="text-xl md:text-2xl jungle-accent mb-12 drop-shadow">
                     <p class="font-semibold">am 06. Juni 2026</p>
                     <p class="font-light">in Schloss Bredeneek</p>
                 </div>
