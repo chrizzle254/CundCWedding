@@ -8,6 +8,10 @@ window.weddingConfig = {
   
   // Spotify playlist ID (extract from playlist URL)
   spotifyPlaylistId: "your-spotify-playlist-id-here",
+
+  // Supabase configuration (for local development)
+  supabaseUrl: "your-supabase-project-url",
+  supabaseAnonKey: "your-supabase-anon-key",
   
   // Google Form URL for RSVP
   rsvpFormUrl: "https://forms.google.com/your-form-url-here",

@@ -2,6 +2,11 @@
 publish = "."
 command = ""
 
+[dev]
+  port = 8888
+  targetPort = 4000
+  framework = "#static"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"

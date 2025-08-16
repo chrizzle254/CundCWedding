@@ -1,10 +1,35 @@
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
+
+// Try to load config file if in development
+let weddingConfig = {};
+try {
+    const configPath = path.join(__dirname, '../../config.js');
+    weddingConfig = require(configPath);
+    console.log('Loaded local config:', { 
+        hasUrl: !!weddingConfig.supabaseUrl, 
+        hasKey: !!weddingConfig.supabaseAnonKey 
+    });
+} catch (error) {
+    console.log('No local config found, using environment variables');
+}
+
+// Get Supabase credentials with fallbacks
+const supabaseUrl = process.env.SUPABASE_URL || weddingConfig.supabaseUrl;
+const supabaseKey = process.env.SUPABASE_ANON_KEY || weddingConfig.supabaseAnonKey;
+
+// Validate credentials
+if (!supabaseUrl) {
+    throw new Error('Supabase URL is required. Set SUPABASE_URL environment variable or provide it in config.js');
+}
+if (!supabaseKey) {
+    throw new Error('Supabase Anon Key is required. Set SUPABASE_ANON_KEY environment variable or provide it in config.js');
+}
+
+console.log('Initializing Supabase client with URL:', supabaseUrl.substring(0, 20) + '...');
 
 // Initialize Supabase client
-const supabase = createClient(
-    process.env.SUPABASE_URL,
-    process.env.SUPABASE_ANON_KEY
-);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 exports.handler = async function(event, context) {
     // Add CORS headers
