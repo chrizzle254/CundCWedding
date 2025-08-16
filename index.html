@@ -525,13 +525,19 @@
                 isWaiting: false
             };
 
-            // Load or initialize leaderboard
-            let leaderboard = JSON.parse(localStorage.getItem('reactionGameLeaderboard') || '[]');
+            // Load leaderboard from server
+            async function fetchLeaderboard() {
+                try {
+                    const response = await fetch('/.netlify/functions/leaderboard');
+                    const leaderboard = await response.json();
+                    updateLeaderboardDisplay(leaderboard);
+                } catch (error) {
+                    console.error('Error fetching leaderboard:', error);
+                }
+            }
             
-            function updateLeaderboardDisplay() {
+            function updateLeaderboardDisplay(leaderboard = []) {
                 leaderboardDiv.innerHTML = leaderboard
-                    .sort((a, b) => a.score - b.score) // Lower is better for reaction time
-                    .slice(0, 5)
                     .map((entry, index) => `
                         <div class="flex items-center justify-between py-2 px-4 ${index === 0 ? 'bg-[rgba(200,169,107,0.2)]' : 'bg-[rgba(27,56,50,0.05)]'} rounded-lg">
                             <span class="font-medium">${entry.name}</span>
@@ -540,7 +546,7 @@
                     `)
                     .join('');
             }
-            updateLeaderboardDisplay();
+            fetchLeaderboard();
 
             function setLightState(state) {
                 switch(state) {
@@ -609,15 +615,27 @@
                 startButton.disabled = false;
             }
 
-            function saveScore() {
+            async function saveScore() {
                 const name = playerNameInput.value.trim() || 'Anonym';
-                leaderboard.push({ name, score: game.reactionTime });
-                leaderboard.sort((a, b) => a.score - b.score); // Lower is better for reaction time
-                if (leaderboard.length > 10) leaderboard.pop();
-                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(leaderboard));
-                updateLeaderboardDisplay();
-                gameOverModal.classList.add('hidden');
-                playerNameInput.value = '';
+                try {
+                    const response = await fetch('/.netlify/functions/leaderboard', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            name,
+                            score: game.reactionTime
+                        })
+                    });
+                    const updatedLeaderboard = await response.json();
+                    updateLeaderboardDisplay(updatedLeaderboard);
+                    gameOverModal.classList.add('hidden');
+                    playerNameInput.value = '';
+                } catch (error) {
+                    console.error('Error saving score:', error);
+                    alert('Fehler beim Speichern des Scores. Bitte versuche es später noch einmal.');
+                }
             }
 
             light.addEventListener('click', handleClick);
