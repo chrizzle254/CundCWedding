@@ -167,6 +167,7 @@
                         <a href="#musik" class="hover:text-[color:rgba(27,56,50,1)] transition">Musik</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition">Location</a>
                         <a href="#rsvp" class="hover:text-[color:rgba(27,56,50,1)] transition">RSVP</a>
+                        <a href="#game" class="hover:text-[color:rgba(27,56,50,1)] transition">Game</a>
                     </nav>
                 </div>
 
@@ -176,6 +177,7 @@
                         <a href="#musik" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Musik</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Location</a>
                         <a href="#rsvp" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">RSVP</a>
+                        <a href="#game" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Game</a>
                     </div>
                 </nav>
             </div>
@@ -302,6 +304,54 @@
                            class="inline-block mt-3 text-sm btn-emerald py-2 px-6 rounded-full hover:transform hover:-translate-y-1 transition-all duration-300">
                             In Google Maps öffnen →
                         </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mini Game Section -->
+        <section id="game" class="relative py-20 px-4">
+            <div class="absolute inset-0 -z-10 opacity-[0.18]"
+                 style="background: radial-gradient(900px 500px at 90% 10%, rgba(27,56,50,0.25), transparent),
+                                 radial-gradient(800px 480px at 10% 20%, rgba(200,169,107,0.35), transparent);">
+            </div>
+            <div class="max-w-4xl mx-auto text-center section-fade-in">
+                <h2 class="text-4xl md:text-5xl font-bold mb-8" style="color: var(--pine-900);">⚡ Reaktionszeit</h2>
+                <div class="glass rounded-3xl p-4 md:p-6">
+                    <div class="mb-4">
+                        <p class="text-lg mb-4" style="color: var(--pine-800);">Trainiere schonmal für den Startschuss zum Buffet.</p>
+                        <button id="startGame" class="btn-emerald py-2 px-6 rounded-full mb-4">
+                            Spiel starten
+                        </button>
+                        <div class="text-lg mb-2" id="instructions">Klicke auf das Licht sobald es grün wird!</div>
+                    </div>
+                    
+                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-[rgba(255,255,255,0.8)] to-[rgba(255,255,255,0.6)] shadow-2xl flex items-center justify-center" style="height: 400px;">
+                        <div id="light" class="w-48 h-48 rounded-full bg-gray-200 transition-colors duration-100 cursor-pointer flex items-center justify-center text-2xl font-bold"></div>
+                        
+                        <!-- Game Over Modal -->
+                        <div id="gameOverModal" class="hidden absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+                            <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4">
+                                <h3 class="text-xl font-bold mb-4" style="color: var(--pine-900);">Runde beendet!</h3>
+                                <p class="mb-4" style="color: var(--pine-800);">Deine Zeit: <span id="finalScore">0</span>ms</p>
+                                <input type="text" 
+                                       id="playerName" 
+                                       placeholder="Dein Name" 
+                                       class="w-full px-4 py-2 rounded-lg mb-4 border border-gray-200 focus:outline-none focus:border-[var(--pine-800)]"
+                                       maxlength="20">
+                                <button id="saveScore" class="btn-emerald py-2 px-6 rounded-full">
+                                    Zeit speichern
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Leaderboard -->
+                    <div class="mt-6">
+                        <h3 class="text-xl font-bold mb-4" style="color: var(--pine-900);">🏆 Bestenliste</h3>
+                        <div id="leaderboard" class="space-y-2">
+                            <!-- Leaderboard entries will be inserted here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -452,6 +502,127 @@
             mobileMenu.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
+        });
+    </script>
+
+    <!-- Reaction Time Game -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const startButton = document.getElementById('startGame');
+            const gameOverModal = document.getElementById('gameOverModal');
+            const finalScoreDisplay = document.getElementById('finalScore');
+            const saveScoreButton = document.getElementById('saveScore');
+            const playerNameInput = document.getElementById('playerName');
+            const leaderboardDiv = document.getElementById('leaderboard');
+            const light = document.getElementById('light');
+            const instructions = document.getElementById('instructions');
+
+            let game = {
+                isActive: false,
+                startTime: null,
+                waitTimeout: null,
+                reactionTime: null,
+                isWaiting: false
+            };
+
+            // Load or initialize leaderboard
+            let leaderboard = JSON.parse(localStorage.getItem('reactionGameLeaderboard') || '[]');
+            
+            function updateLeaderboardDisplay() {
+                leaderboardDiv.innerHTML = leaderboard
+                    .sort((a, b) => a.score - b.score) // Lower is better for reaction time
+                    .slice(0, 5)
+                    .map((entry, index) => `
+                        <div class="flex items-center justify-between py-2 px-4 ${index === 0 ? 'bg-[rgba(200,169,107,0.2)]' : 'bg-[rgba(27,56,50,0.05)]'} rounded-lg">
+                            <span class="font-medium">${entry.name}</span>
+                            <span>${entry.score}ms</span>
+                        </div>
+                    `)
+                    .join('');
+            }
+            updateLeaderboardDisplay();
+
+            function setLightState(state) {
+                switch(state) {
+                    case 'waiting':
+                        light.style.backgroundColor = '#ef4444'; // Red
+                        light.textContent = 'Warten...';
+                        break;
+                    case 'ready':
+                        light.style.backgroundColor = '#22c55e'; // Green
+                        light.textContent = 'JETZT!';
+                        break;
+                    case 'idle':
+                        light.style.backgroundColor = '#d1d5db'; // Gray
+                        light.textContent = '';
+                        break;
+                    case 'early':
+                        light.style.backgroundColor = '#eab308'; // Yellow
+                        light.textContent = 'Zu früh!';
+                        break;
+                }
+            }
+
+            function startGame() {
+                game.isActive = true;
+                game.isWaiting = true;
+                startButton.disabled = true;
+                setLightState('waiting');
+                instructions.textContent = 'Warte auf grün...';
+                
+                // Random wait between 1 and 10 seconds
+                const waitTime = Math.random() * 9000 + 1000;
+                game.waitTimeout = setTimeout(() => {
+                    if (game.isActive) {
+                        game.startTime = Date.now();
+                        game.isWaiting = false;
+                        setLightState('ready');
+                        instructions.textContent = 'KLICK!';
+                    }
+                }, waitTime);
+            }
+
+            function handleClick() {
+                if (!game.isActive) return;
+                
+                if (game.isWaiting) {
+                    // Clicked too early
+                    clearTimeout(game.waitTimeout);
+                    game.isActive = false;
+                    setLightState('early');
+                    instructions.textContent = 'Zu früh geklickt! Versuche es noch mal.';
+                    startButton.disabled = false;
+                    return;
+                }
+
+                // Valid click after light turned green
+                game.reactionTime = Date.now() - game.startTime;
+                game.isActive = false;
+                endGame();
+            }
+
+            function endGame() {
+                finalScoreDisplay.textContent = game.reactionTime;
+                gameOverModal.classList.remove('hidden');
+                setLightState('idle');
+                instructions.textContent = 'Klicke auf das Licht sobald es grün wird!';
+                startButton.disabled = false;
+            }
+
+            function saveScore() {
+                const name = playerNameInput.value.trim() || 'Anonym';
+                leaderboard.push({ name, score: game.reactionTime });
+                leaderboard.sort((a, b) => a.score - b.score); // Lower is better for reaction time
+                if (leaderboard.length > 10) leaderboard.pop();
+                localStorage.setItem('reactionGameLeaderboard', JSON.stringify(leaderboard));
+                updateLeaderboardDisplay();
+                gameOverModal.classList.add('hidden');
+                playerNameInput.value = '';
+            }
+
+            light.addEventListener('click', handleClick);
+            startButton.addEventListener('click', startGame);
+            saveScoreButton.addEventListener('click', saveScore);
         });
     </script>
 
