@@ -3,7 +3,14 @@
 
 console.log('main.js script start');
 
-
+// Game state
+const game = {
+    isActive: false,
+    startTime: null,
+    waitTimeout: null,
+    reactionTime: null,
+    isWaiting: false
+};
 
 let config = null; // declare once
 let configLoaded = false;
@@ -140,6 +147,7 @@ function showMainContent() {
             mainContent.style.display = "block";
 
             initializeWebsite();
+            initializeGame();
             setTimeout(addFadeInAnimations, 100);
         }, 300);
     }
@@ -344,6 +352,177 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 });
+
+/**
+ * Game Functions
+ */
+
+function setLightState(state) {
+    const light = document.getElementById('light');
+    if (!light) return;
+    
+    switch(state) {
+        case 'waiting':
+            light.style.backgroundColor = '#ef4444';
+            light.textContent = 'Warten...';
+            break;
+        case 'ready':
+            light.style.backgroundColor = '#22c55e';
+            light.textContent = 'JETZT!';
+            break;
+        case 'idle':
+            light.style.backgroundColor = '#d1d5db';
+            light.textContent = '';
+            break;
+        case 'early':
+            light.style.backgroundColor = '#eab308';
+            light.textContent = 'Zu früh!';
+            break;
+    }
+}
+
+function startGame() {
+    const startButton = document.getElementById('startGame');
+    const instructions = document.getElementById('instructions');
+    if (!startButton || !instructions) return;
+
+    game.isActive = true;
+    game.isWaiting = true;
+    startButton.disabled = true;
+    setLightState('waiting');
+    instructions.textContent = 'Warte auf grün...';
+    
+    const waitTime = Math.random() * 9000 + 1000;
+    game.waitTimeout = setTimeout(() => {
+        if (game.isActive) {
+            game.startTime = Date.now();
+            game.isWaiting = false;
+            setLightState('ready');
+            instructions.textContent = 'KLICK!';
+        }
+    }, waitTime);
+}
+
+function handleGameClick() {
+    const startButton = document.getElementById('startGame');
+    const instructions = document.getElementById('instructions');
+    if (!startButton || !instructions) return;
+    
+    if (!game.isActive) return;
+    
+    if (game.isWaiting) {
+        clearTimeout(game.waitTimeout);
+        game.isActive = false;
+        setLightState('early');
+        instructions.textContent = 'Zu früh geklickt! Versuche es noch mal.';
+        startButton.disabled = false;
+        return;
+    }
+
+    game.reactionTime = Date.now() - game.startTime;
+    game.isActive = false;
+    endGame();
+}
+
+function endGame() {
+    const gameOverModal = document.getElementById('gameOverModal');
+    const finalScoreDisplay = document.getElementById('finalScore');
+    const startButton = document.getElementById('startGame');
+    const instructions = document.getElementById('instructions');
+    
+    if (!gameOverModal || !finalScoreDisplay || !startButton || !instructions) return;
+
+    finalScoreDisplay.textContent = game.reactionTime;
+    gameOverModal.classList.remove('hidden');
+    setLightState('idle');
+    instructions.textContent = 'Klicke auf das Licht sobald es grün wird!';
+    startButton.disabled = false;
+}
+
+async function saveScore() {
+    const playerNameInput = document.getElementById('playerName');
+    const gameOverModal = document.getElementById('gameOverModal');
+    if (!playerNameInput || !gameOverModal) return;
+
+    const name = playerNameInput.value.trim() || 'Anonym';
+    
+    try {
+        console.log('Saving score:', { name, score: game.reactionTime });
+        const response = await fetch('/.netlify/functions/leaderboard', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name,
+                score: game.reactionTime
+            })
+        });
+        
+        console.log('Save score response:', response);
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+        }
+        
+        const updatedLeaderboard = await response.json();
+        console.log('Updated leaderboard:', updatedLeaderboard);
+        updateLeaderboardDisplay(updatedLeaderboard);
+        gameOverModal.classList.add('hidden');
+        playerNameInput.value = '';
+    } catch (error) {
+        console.error('Error saving score:', error);
+        alert('Fehler beim Speichern des Scores. Bitte versuche es später noch einmal.');
+    }
+}
+
+async function fetchLeaderboard() {
+    try {
+        console.log('Fetching leaderboard...');
+        const response = await fetch('/.netlify/functions/leaderboard');
+        console.log('Leaderboard response:', response);
+        const leaderboard = await response.json();
+        console.log('Leaderboard data:', leaderboard);
+        updateLeaderboardDisplay(leaderboard);
+    } catch (error) {
+        console.error('Error fetching leaderboard:', error);
+    }
+}
+
+function updateLeaderboardDisplay(leaderboard = []) {
+    const leaderboardDiv = document.getElementById('leaderboard');
+    if (!leaderboardDiv) return;
+
+    leaderboardDiv.innerHTML = leaderboard
+        .map((entry, index) => `
+            <div class="flex items-center justify-between py-2 px-4 ${index === 0 ? 'bg-[rgba(200,169,107,0.2)]' : 'bg-[rgba(27,56,50,0.05)]'} rounded-lg">
+                <span class="font-medium">${entry.name}</span>
+                <span>${entry.score}ms</span>
+            </div>
+        `)
+        .join('');
+}
+
+function initializeGame() {
+    const light = document.getElementById('light');
+    const startButton = document.getElementById('startGame');
+    const saveScoreButton = document.getElementById('saveScore');
+
+    if (light && startButton && saveScoreButton) {
+        // Load initial leaderboard
+        fetchLeaderboard();
+
+        // Remove any existing event listeners (just in case)
+        light.removeEventListener('click', handleGameClick);
+        startButton.removeEventListener('click', startGame);
+        saveScoreButton.removeEventListener('click', saveScore);
+
+        // Add event listeners
+        light.addEventListener('click', handleGameClick);
+        startButton.addEventListener('click', startGame);
+        saveScoreButton.addEventListener('click', saveScore);
+    }
+}
 
 // Export globals for HTML inline calls
 window.checkPassword = checkPassword;

@@ -505,17 +505,11 @@
         });
     </script>
 
-    <!-- Reaction Time Game -->
+    <!-- Game initialized in main.js -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const startButton = document.getElementById('startGame');
-            const gameOverModal = document.getElementById('gameOverModal');
-            const finalScoreDisplay = document.getElementById('finalScore');
-            const saveScoreButton = document.getElementById('saveScore');
-            const playerNameInput = document.getElementById('playerName');
-            const leaderboardDiv = document.getElementById('leaderboard');
-            const light = document.getElementById('light');
-            const instructions = document.getElementById('instructions');
+            // Game initialization moved to main.js
+            initializeGame();
 
             let game = {
                 isActive: false,
@@ -648,9 +642,6 @@
                 }
             }
 
-            light.addEventListener('click', handleClick);
-            startButton.addEventListener('click', startGame);
-            saveScoreButton.addEventListener('click', saveScore);
         });
     </script>
 
