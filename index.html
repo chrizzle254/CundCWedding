@@ -528,8 +528,11 @@
             // Load leaderboard from server
             async function fetchLeaderboard() {
                 try {
+                    console.log('Fetching leaderboard...');
                     const response = await fetch('/.netlify/functions/leaderboard');
+                    console.log('Leaderboard response:', response);
                     const leaderboard = await response.json();
+                    console.log('Leaderboard data:', leaderboard);
                     updateLeaderboardDisplay(leaderboard);
                 } catch (error) {
                     console.error('Error fetching leaderboard:', error);
@@ -618,6 +621,7 @@
             async function saveScore() {
                 const name = playerNameInput.value.trim() || 'Anonym';
                 try {
+                    console.log('Saving score:', { name, score: game.reactionTime });
                     const response = await fetch('/.netlify/functions/leaderboard', {
                         method: 'POST',
                         headers: {
@@ -628,7 +632,13 @@
                             score: game.reactionTime
                         })
                     });
+                    console.log('Save score response:', response);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
+                    }
                     const updatedLeaderboard = await response.json();
+                    console.log('Updated leaderboard:', updatedLeaderboard);
                     updateLeaderboardDisplay(updatedLeaderboard);
                     gameOverModal.classList.add('hidden');
                     playerNameInput.value = '';
