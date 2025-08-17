@@ -148,6 +148,7 @@ function showMainContent() {
 
             initializeWebsite();
             initializeGame();
+            console.log("🌐 Main content initialized bummmmm");
             setTimeout(addFadeInAnimations, 100);
         }, 300);
     }
