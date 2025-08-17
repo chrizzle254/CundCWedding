@@ -189,7 +189,6 @@ function showMainContent() {
         
         console.log("✅ Main content fully initialized");
     }, 300);
-    }
 }
 
 /**
