@@ -53,10 +53,13 @@ function checkPassword() {
         .then(data => {
             if (data.success) {
                 console.log("✅ Password correct, showing main content");
+                console.log("Config received:", data.config);
                 isAuthenticated = true;
                 config = data.config;
                 configLoaded = true;
-                localStorage.setItem("weddingAuthToken", btoa(enteredPassword));
+                const token = btoa(enteredPassword);
+                localStorage.setItem("weddingAuthToken", token);
+                console.log("Auth token set:", token);
                 showMainContent();
             } else {
                 console.warn("❌ Incorrect password");
@@ -95,25 +98,44 @@ function setupEventListeners() {
  */
 function checkAuthenticationStatus() {
     const authToken = localStorage.getItem("weddingAuthToken");
+    console.log("Checking auth status, token exists:", !!authToken);
+    
     if (authToken) {
-        // Try to auto-login with stored token
-        fetch('/.netlify/functions/auth', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ password: atob(authToken) })
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                isAuthenticated = true;
-                config = data.config;
-                configLoaded = true;
-                showMainContent();
-            } else {
+        try {
+            const decodedPassword = atob(authToken);
+            console.log("Token decoded successfully");
+            
+            // Try to auto-login with stored token
+            fetch('/.netlify/functions/auth', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: decodedPassword })
+            })
+            .then(res => {
+                console.log("Auth response status:", res.status);
+                return res.json();
+            })
+            .then(data => {
+                console.log("Auth response data:", data);
+                if (data.success) {
+                    console.log("Auto-login successful");
+                    isAuthenticated = true;
+                    config = data.config;
+                    configLoaded = true;
+                    showMainContent();
+                } else {
+                    console.warn("Auto-login failed: incorrect password");
+                    showPasswordScreen();
+                }
+            })
+            .catch(err => {
+                console.error("Auto-login fetch error:", err);
                 showPasswordScreen();
-            }
-        })
-        .catch(() => showPasswordScreen());
+            });
+        } catch (err) {
+            console.error("Token decode error:", err);
+            showPasswordScreen();
+        }
     } else {
         showPasswordScreen();
     }
@@ -135,22 +157,38 @@ function showPasswordScreen() {
  * Show main content and hide password screen with animation
  */
 function showMainContent() {
+    console.log("🔄 Showing main content...");
     const passwordScreen = document.getElementById("passwordScreen");
     const mainContent = document.getElementById("mainContent");
 
-    if (passwordScreen) {
-        passwordScreen.style.opacity = "0";
-        passwordScreen.style.transform = "scale(0.95)";
-        setTimeout(() => {
-            passwordScreen.style.display = "none";
-            if (mainContent) mainContent.classList.remove("hidden");
-            mainContent.style.display = "block";
+    if (!passwordScreen || !mainContent) {
+        console.error("❌ Required elements not found:", {
+            passwordScreen: !!passwordScreen,
+            mainContent: !!mainContent
+        });
+        return;
+    }
 
-            initializeWebsite();
-            initializeGame();
-            console.log("🌐 Main content initialized bummmmm");
-            setTimeout(addFadeInAnimations, 100);
-        }, 300);
+    passwordScreen.style.opacity = "0";
+    passwordScreen.style.transform = "scale(0.95)";
+    
+    setTimeout(() => {
+        console.log("🔄 Animating content transition...");
+        passwordScreen.style.display = "none";
+        mainContent.classList.remove("hidden");
+        mainContent.style.display = "block";
+
+        console.log("🔄 Initializing website components...");
+        initializeWebsite();
+        
+        console.log("🎮 Initializing game...");
+        initializeGame();
+        
+        console.log("✨ Adding animations...");
+        setTimeout(addFadeInAnimations, 100);
+        
+        console.log("✅ Main content fully initialized");
+    }, 300);
     }
 }
 
