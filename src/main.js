@@ -31,7 +31,7 @@ function checkPassword() {
     if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
         // Local: check password directly
         if (config && enteredPassword === config.password) {
-            console.log("✅ Password correct, showing main content");
+            console.log("✅ Password correct, showing main content (local mode)");
             isAuthenticated = true;
             configLoaded = true;
             localStorage.setItem("weddingAuthToken", btoa(enteredPassword));
