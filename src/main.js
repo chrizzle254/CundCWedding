@@ -179,10 +179,20 @@ function showMainContent() {
         mainContent.style.display = "block";
 
         console.log("🔄 Initializing website components...");
-        initializeWebsite();
+        try {
+            initializeWebsite();
+            console.log("✅ Website components initialized");
+        } catch (error) {
+            console.error("❌ Error initializing website:", error);
+        }
         
         console.log("🎮 Initializing game...");
-        initializeGame();
+        try {
+            initializeGame();
+            console.log("✅ Game initialized successfully");
+        } catch (error) {
+            console.error("❌ Error initializing game:", error);
+        }
         
         console.log("✨ Adding animations...");
         setTimeout(addFadeInAnimations, 100);
@@ -542,9 +552,16 @@ function updateLeaderboardDisplay(leaderboard = []) {
 }
 
 function initializeGame() {
+    console.log("🎮 Starting game initialization...");
     const light = document.getElementById('light');
     const startButton = document.getElementById('startGame');
     const saveScoreButton = document.getElementById('saveScore');
+    
+    console.log("🔍 Game elements found:", {
+        light: !!light,
+        startButton: !!startButton,
+        saveScoreButton: !!saveScoreButton
+    });
 
     if (light && startButton && saveScoreButton) {
         // Load initial leaderboard
