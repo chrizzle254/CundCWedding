@@ -1,5 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const path = require('path');
+console.log('kommt das an?');
 
 // Try to load config file if in development
 let weddingConfig = {};
