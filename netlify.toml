@@ -1,6 +1,13 @@
 [build]
 publish = "."
-command = ""
+command = "npm ci && cd netlify/functions && npm ci"
+
+[functions]
+directory = "netlify/functions"
+node_bundler = "esbuild"
+
+[build.environment]
+  NODE_VERSION = "18"
 
 [dev]
   port = 8888

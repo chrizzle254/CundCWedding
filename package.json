@@ -7,11 +7,10 @@
     "start": "python3 -m http.server 8000",
     "serve": "npx serve .",
     "dev": "python3 -m http.server 8000",
-    "build": "echo 'No build step required - static website'",
+    "build": "npm install",
     "deploy": "echo 'Push to GitHub and enable GitHub Pages'"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.55.0",
     "mongodb": "^5.7.0"
   },
   "keywords": [
@@ -26,7 +25,6 @@
   "license": "UNLICENSED",
   "private": true,
   "devDependencies": {},
-  "dependencies": {},
   "engines": {
     "node": ">=14.0.0"
   },
