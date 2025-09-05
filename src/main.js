@@ -397,6 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 config = cfg;
                 configLoaded = true;
                 console.log("🔧 Config loaded from Netlify Function:", config);
+                console.log("here?asda 2");
                 checkAuthenticationStatus();
                 console.log("here?asda");
                 showMainContent();
