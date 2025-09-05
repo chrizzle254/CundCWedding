@@ -102,34 +102,48 @@ function setupEventListeners() {
  * Restore authentication status from localStorage
  */
 function checkAuthenticationStatus() {
+    console.log("🔒 Starting authentication check...");
     const authToken = localStorage.getItem("weddingAuthToken");
-    console.log("Checking auth status, token exists:", !!authToken);
+    console.log("🔑 Auth token status:", {
+        exists: !!authToken,
+        length: authToken ? authToken.length : 0
+    });
     
     if (authToken) {
         try {
             const decodedPassword = atob(authToken);
-            console.log("Token decoded successfully");
+            console.log("🔓 Token decoded, length:", decodedPassword.length);
             
             // Try to auto-login with stored token
+            console.log("🔄 Attempting auto-login with stored token...");
             fetch('/.netlify/functions/auth', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password: decodedPassword })
             })
             .then(res => {
-                console.log("Auth response status:", res.status);
+                console.log("🌐 Auth response received:", {
+                    status: res.status,
+                    ok: res.ok,
+                    statusText: res.statusText
+                });
                 return res.json();
             })
             .then(data => {
-                console.log("Auth response data:", data);
+                console.log("📦 Auth response data:", {
+                    success: data.success,
+                    hasConfig: !!data.config,
+                    configKeys: data.config ? Object.keys(data.config) : []
+                });
                 if (data.success) {
-                    console.log("Auto-login successful");
+                    console.log("✅ Auto-login successful");
                     isAuthenticated = true;
                     config = data.config;
                     configLoaded = true;
                     showMainContent();
                 } else {
-                    console.warn("Auto-login failed: incorrect password");
+                    console.warn("❌ Auto-login failed: incorrect password");
+                    localStorage.removeItem("weddingAuthToken"); // Clear invalid token
                     showPasswordScreen();
                 }
             })
