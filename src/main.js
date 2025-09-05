@@ -55,10 +55,15 @@ function checkPassword() {
                 console.log("✅ Password correct, showing main content");
                 console.log("Config received:", data.config);
                 isAuthenticated = true;
+                console.log("1");
                 config = data.config;
+                console.log("2");
                 configLoaded = true;
+                console.log("3");
                 const token = btoa(enteredPassword);
+                console.log("4");
                 localStorage.setItem("weddingAuthToken", token);
+                console.log("5");
                 console.log("Auth token set:", token);
                 showMainContent();
             } else {
