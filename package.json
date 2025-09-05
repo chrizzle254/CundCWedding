@@ -7,7 +7,7 @@
     "start": "python3 -m http.server 8000",
     "serve": "npx serve .",
     "dev": "python3 -m http.server 8000",
-    "build": "npm install",
+    "build": "npm install && cd netlify/functions && npm install",
     "deploy": "echo 'Push to GitHub and enable GitHub Pages'"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 [build]
 publish = "."
-command = "npm ci && cd netlify/functions && npm ci"
+command = "npm install && cd netlify/functions && npm install"
 
 [functions]
 directory = "netlify/functions"
