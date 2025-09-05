@@ -398,6 +398,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 configLoaded = true;
                 console.log("🔧 Config loaded from Netlify Function:", config);
                 checkAuthenticationStatus();
+                console.log("here?asda");
+                showMainContent();
             })
             .catch(err => {
                 console.error("❌ Config not available from Netlify Function.", err);
