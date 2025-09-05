@@ -17,6 +17,7 @@ try {
 // Get Supabase credentials with fallbacks
 const supabaseUrl = process.env.SUPABASE_URL || weddingConfig.supabaseUrl;
 const supabaseKey = process.env.SUPABASE_ANON_KEY || weddingConfig.supabaseAnonKey;
+console.log('supabaseUrl and supabaseKey: ');
 console.log(supabaseUrl, supabaseKey);
 
 // Validate credentials
