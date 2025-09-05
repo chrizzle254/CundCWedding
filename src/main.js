@@ -52,7 +52,7 @@ function checkPassword() {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                console.log("✅ Password correct, showing main content");
+                console.log("✅ Password correct test, showing main content");
                 console.log("Config received:", data.config);
                 isAuthenticated = true;
                 console.log("1");
