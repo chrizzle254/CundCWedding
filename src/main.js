@@ -535,10 +535,22 @@ function setLightState(state) {
 function startGame() {
     const startButton = document.getElementById('startGame');
     const instructions = document.getElementById('instructions');
+    const gameOverModal = document.getElementById('gameOverModal');
+    const playerNameInput = document.getElementById('playerName');
     if (!startButton || !instructions) return;
 
+    // Close modal and reset form if it's open
+    if (gameOverModal) {
+        gameOverModal.classList.add('hidden');
+    }
+    if (playerNameInput) {
+        playerNameInput.value = '';
+    }
+
+    // Reset game state
     game.isActive = true;
     game.isWaiting = true;
+    game.reactionTime = null;
     startButton.disabled = true;
     setLightState('waiting');
     instructions.textContent = 'Warte auf grün...';
