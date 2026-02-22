@@ -30,6 +30,35 @@
             --ink-900: #0f1715;
         }
 
+        .timeline {
+            position: relative;
+            padding-left: 4rem; /* Space for icons */
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 23px; /* Center the line on the icon */
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: rgba(200, 169, 107, 0.4); /* gold-400 with opacity */
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: -1.75rem; /* (4rem padding - 2.5rem icon width) / 2 - 4rem padding */
+            top: 0;
+            transform: translateX(-50%);
+        }
+
+
+
         body {
             font-family: 'Montserrat', sans-serif;
             color: #1f2a27;
@@ -164,6 +193,7 @@
 
                     <!-- Desktop navigation -->
                     <nav class="hidden md:flex items-center gap-6 text-[color:rgba(27,56,50,0.8)] font-medium">
+                        <a href="#agenda" class="hover:text-[color:rgba(27,56,50,1)] transition">Agenda</a>
                         <a href="#musik" class="hover:text-[color:rgba(27,56,50,1)] transition">Musik</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition">Location</a>
                         <a href="#rsvp" class="hover:text-[color:rgba(27,56,50,1)] transition">RSVP</a>
@@ -174,6 +204,7 @@
                 <!-- Mobile navigation (hidden by default) -->
                 <nav id="mobileMenu" class="hidden md:hidden pt-4 mt-4 border-t border-[rgba(27,56,50,0.1)]">
                     <div class="flex flex-col gap-4 text-[color:rgba(27,56,50,0.8)] font-medium">
+                        <a href="#agenda" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Agenda</a>
                         <a href="#musik" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Musik</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Location</a>
                         <a href="#rsvp" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">RSVP</a>
@@ -273,6 +304,41 @@
                 <p class="text-white/70 mt-6 text-sm">
                     Wir freuen uns darauf mit dir zu feiern!
                 </p>
+            </div>
+        </section>
+
+        <!-- Agenda Section -->
+        <section id="agenda" class="relative py-20 px-4">
+            <div class="w-full py-12 flex justify-center">
+                <div class="max-w-2xl w-full px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-4xl md:text-5xl font-bold text-center mb-12" style="color: var(--pine-900);">🗓️ Was ist Wann?</h2>
+                    <div class="space-y-0">
+                        <div id="agendaItems" class="space-y-0">
+                            <!-- Dynamically filled by JS -->
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Events Description -->
+                    <div class="mt-16 pt-12 border-t" style="border-color: rgba(27,56,50,0.2);">
+                        <p class="text-base font-montserrat mb-6" style="color: var(--pine-900);">
+                            <span class="font-semibold">Wenn ihr noch mehr Zeit habt, gibt es auch noch mehr zu erleben!</span>
+                        </p>
+                        <div class="space-y-4 text-sm font-montserrat" style="color: var(--pine-800);">
+                            <div>
+                                <p class="font-semibold" style="color: var(--pine-900);">Do, 4.6. - Kiel Standesamt & Gemeindehaus</p>
+                                <p>~13:30 Uhr Autokorso vom Standesamt zum Hasselgrund zur Afterparty</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold" style="color: var(--pine-900);">Fr, 5.6. - Hof Sonnenmeer</p>
+                                <p>17 Uhr Gettogether & warm machen für Samstag</p>
+                            </div>
+                            <div>
+                                <p class="font-semibold" style="color: var(--pine-900);">So, 7.6. - Hof Sonnenmeer</p>
+                                <p>11 Uhr Katerfrühstück</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 

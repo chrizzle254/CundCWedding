@@ -113,8 +113,22 @@ function checkAuthenticationStatus() {
         try {
             const decodedPassword = atob(authToken);
             console.log("🔓 Token decoded, length:", decodedPassword.length);
+
+            // Local environment check
+            if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
+                if (config && decodedPassword === config.password) {
+                    console.log("✅ Auto-login successful (local mode)");
+                    isAuthenticated = true;
+                    showMainContent();
+                } else {
+                    console.warn("❌ Auto-login failed (local mode): incorrect password");
+                    localStorage.removeItem("weddingAuthToken");
+                    showPasswordScreen();
+                }
+                return; // End execution here for local
+            }
             
-            // Try to auto-login with stored token
+            // Production: Try to auto-login with stored token via Netlify Function
             console.log("🔄 Attempting auto-login with stored token...");
             fetch('/.netlify/functions/auth', {
                 method: 'POST',
@@ -249,22 +263,92 @@ function updateSpotifyPlaylist() {
  */
 function populateAgenda() {
     const agendaContainer = document.getElementById("agendaItems");
-    if (!agendaContainer || !config.agenda) return;
+    if (!agendaContainer) return;
+
+    const agendaByDay = [
+        {
+            day: "Sa, 6.6.",
+            title: "Hochzeit",
+            location: "Schloss Bredeneek",
+            events: [
+                {
+                    time: "15 Uhr",
+                    title: "Empfang",
+                    description: "Ankommen und erstmal ein Sektchen.",
+                    icon: "🥂"
+                },
+                {
+                    time: "18 Uhr",
+                    title: "Dinner, Spaß & Spiele",
+                    description: "Wir lassen uns kulinarisch verwöhnen und genießen den Abend.",
+                    icon: "🍽️"
+                },
+                {
+                    time: "22 Uhr",
+                    title: "Party",
+                    description: "Tanzschuhe an und ab auf die Tanzfläche!",
+                    icon: "💃"
+                },
+                {
+                    time: "3 Uhr",
+                    title: "Rausschmiss",
+                    description: "Alles hat ein Ende, auch die schönste Party.",
+                    icon: "👋"
+                }
+            ]
+        }
+    ];
 
     agendaContainer.innerHTML = "";
-    config.agenda.forEach((item) => {
-        const div = document.createElement("div");
-        div.className = "timeline-item bg-white rounded-2xl p-8 shadow-lg border-l-4 border-gold-400 ml-8";
-        div.innerHTML = `
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-                <div class="flex-1">
-                    <div class="text-3xl font-bold text-gold-600 mb-2">${item.time}</div>
-                    <h3 class="text-2xl font-bold text-gray-800 mb-3">${item.title}</h3>
-                    <p class="text-gray-600 text-lg leading-relaxed">${item.description}</p>
-                </div>
-            </div>
+    agendaByDay.forEach(dayInfo => {
+        // Day Header
+        const header = document.createElement('div');
+        header.className = 'pb-8 mb-8';
+        header.innerHTML = `
+            <h3 class="text-2xl font-bold" style="color: var(--pine-900);">${dayInfo.day} - ${dayInfo.title}</h3>
+            <p class="text-lg" style="color: var(--pine-800);">${dayInfo.location}</p>
         `;
-        agendaContainer.appendChild(div);
+        agendaContainer.appendChild(header);
+
+        // Create timeline container
+        const timelineContainer = document.createElement("div");
+        timelineContainer.className = "relative pl-8";
+        
+        // Add vertical line
+        const line = document.createElement("div");
+        line.style.cssText = `
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--pine-900), rgba(27,56,50,0.3));
+        `;
+        timelineContainer.appendChild(line);
+
+        // Events for the day
+        dayInfo.events.forEach((item, index) => {
+            const div = document.createElement("div");
+            div.className = "mb-8 relative";
+            
+            const titleEl = document.createElement("div");
+            titleEl.className = "text-sm font-semibold font-montserrat";
+            titleEl.style.color = "var(--pine-900)";
+            //titleEl.textContent = `${item.time}: ${item.title}`;
+            titleEl.textContent = `${item.time}`;
+            div.appendChild(titleEl);
+            
+            const descEl = document.createElement("p");
+            descEl.className = "mt-1 text-sm sm:text-base leading-relaxed font-montserrat";
+            descEl.style.color = "var(--pine-800)";
+            //descEl.textContent = item.description;
+            descEl.textContent = `${item.icon} ${item.title}`;
+            div.appendChild(descEl);
+            
+            timelineContainer.appendChild(div);
+        });
+        
+        agendaContainer.appendChild(timelineContainer);
     });
 }
 
