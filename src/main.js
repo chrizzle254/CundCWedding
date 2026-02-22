@@ -244,6 +244,7 @@ function initializeWebsite() {
     populateContacts();
     updateRSVPButton();
     updateWeddingDetails();
+    initializeCountdown();
 }
 
 /**
@@ -437,6 +438,44 @@ function updateWeddingDetails() {
     if (config.wedding && config.wedding.coupleNames) {
         document.title = `Hochzeit ${config.wedding.coupleNames}`;
     }
+}
+
+/**
+ * Initialize and update countdown timer
+ */
+function initializeCountdown() {
+    // Wedding date: June 6, 2026 at 15:00 (3 PM)
+    const weddingDate = new Date('2026-06-06T15:00:00');
+    
+    function updateCountdown() {
+        const now = new Date();
+        const difference = weddingDate - now;
+        
+        if (difference <= 0) {
+            // Wedding has started or passed
+            document.getElementById('countdownDays').textContent = '0';
+            document.getElementById('countdownHours').textContent = '0';
+            document.getElementById('countdownMinutes').textContent = '0';
+            document.getElementById('countdownSeconds').textContent = '0';
+            return;
+        }
+        
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+        
+        document.getElementById('countdownDays').textContent = days;
+        document.getElementById('countdownHours').textContent = hours;
+        document.getElementById('countdownMinutes').textContent = minutes;
+        document.getElementById('countdownSeconds').textContent = seconds;
+    }
+    
+    // Update immediately
+    updateCountdown();
+    
+    // Update every second
+    setInterval(updateCountdown, 1000);
 }
 
 /**
