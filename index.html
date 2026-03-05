@@ -197,6 +197,7 @@
                         <a href="#agenda" class="hover:text-[color:rgba(27,56,50,1)] transition">Agenda</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition">Location</a>
                         <a href="#game" class="hover:text-[color:rgba(27,56,50,1)] transition">Minigame</a>
+                        <a href="#gifts" class="hover:text-[color:rgba(27,56,50,1)] transition">Geschenke</a>
                     </nav>
                 </div>
 
@@ -207,6 +208,7 @@
                         <a href="#agenda" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Agenda</a>
                         <a href="#location" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Location</a>
                         <a href="#game" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Minigame</a>
+                        <a href="#gifts" class="hover:text-[color:rgba(27,56,50,1)] transition py-2">Geschenke</a>
                     </div>
                 </nav>
             </div>
@@ -441,6 +443,53 @@
             </div>
         </section>
 
+        <!-- Geschenkewünsche Section -->
+        <section id="gifts" class="relative py-20 px-4">
+            <div class="absolute inset-0 -z-10 opacity-[0.18]"
+                 style="background: radial-gradient(900px 500px at 10% 10%, rgba(27,56,50,0.25), transparent),
+                                 radial-gradient(800px 480px at 90% 20%, rgba(200,169,107,0.35), transparent);">
+            </div>
+            <div class="max-w-4xl mx-auto text-center section-fade-in">
+                <h2 class="text-4xl md:text-5xl font-bold mb-8" style="color: var(--pine-900);">🎁 Geschenkewünsche</h2>
+                <div class="glass rounded-3xl p-8 md:p-12">
+                    <p class="text-lg md:text-xl leading-relaxed mb-8" style="color: var(--pine-800);">
+                        Dass ihr da seid ist, Geschenk genug für uns!</p> 
+                        Wenn euch das nicht ausreicht, dann könnt ihr unsere Hochzeitsreise in die Toskana gerne mit Geld für mehr Pizza sponsern! (Unten findet ihr die Bankverbindung) 
+                        Ansonsten freuen wir uns über gemeinsame Erlebnisse oder wenn ihr euch kreativ austobt.
+                    </p>
+                    
+                    <!-- IBAN Toggle Button -->
+                    <div class="mt-8">
+                        <button 
+                            id="toggleIbanButton" 
+                            class="btn-emerald py-3 px-8 rounded-full text-base font-semibold"
+                            onclick="toggleIban()"
+                        >
+                            Klicken um IBAN anzuzeigen
+                        </button>
+                        
+                        <!-- IBAN Details (hidden by default) -->
+                        <div id="ibanDetails" class="hidden mt-6 p-6 rounded-xl bg-white/60 backdrop-blur-sm border border-[rgba(27,56,50,0.15)]">
+                            <div class="space-y-3 text-left max-w-md mx-auto">
+                                <div>
+                                    <p class="text-sm font-semibold" style="color: var(--pine-900);">Kontoinhaber:</p>
+                                    <p class="text-base" style="color: var(--pine-800);">Cathrin Kähler und Christoph Schroeder</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold" style="color: var(--pine-900);">IBAN:</p>
+                                    <p class="text-base font-mono" style="color: var(--pine-800);">DE93 1203 0000 1076 9352 36</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-semibold" style="color: var(--pine-900);">BIC:</p>
+                                    <p class="text-base font-mono" style="color: var(--pine-800);">BYLADEM1001</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Footer -->
         <footer class="py-12 px-4" style="background: linear-gradient(180deg, var(--cream-100), var(--cream-200)); color: var(--pine-900); text-align: center;">
             <div class="max-w-4xl mx-auto">
@@ -589,6 +638,21 @@
         });
     </script>
 
+    <!-- IBAN Toggle functionality -->
+    <script>
+        function toggleIban() {
+            const ibanDetails = document.getElementById('ibanDetails');
+            const toggleButton = document.getElementById('toggleIbanButton');
+            
+            if (ibanDetails.classList.contains('hidden')) {
+                ibanDetails.classList.remove('hidden');
+                toggleButton.textContent = 'IBAN ausblenden';
+            } else {
+                ibanDetails.classList.add('hidden');
+                toggleButton.textContent = 'Klicken um IBAN anzuzeigen';
+            }
+        }
+    </script>
    
 </body>
 </html>
