@@ -631,20 +631,27 @@ function handleGameClick() {
  */
 async function calculateRank(score) {
     try {
-        const response = await fetch('/.netlify/functions/leaderboard');
+        // Fetch ALL scores from the database, not just top 5
+        const response = await fetch('/.netlify/functions/leaderboard?all=true');
         if (!response.ok) return null;
         
         const leaderboard = await response.json();
         
+        console.log('Calculating rank for score:', score);
+        console.log('Total entries in leaderboard:', leaderboard.length);
+        
         // Find position where this score would be inserted
+        // Lower score = better rank (faster reaction time)
         let rank = 1;
         for (const entry of leaderboard) {
-            if (score >= entry.score) {
+            if (score < entry.score) {
+                // Current score is better (lower), so we found our position
                 break;
             }
             rank++;
         }
         
+        console.log('Calculated rank:', rank);
         return rank;
     } catch (error) {
         console.error('Error calculating rank:', error);

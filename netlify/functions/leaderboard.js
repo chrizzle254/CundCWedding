@@ -67,19 +67,29 @@ exports.handler = async function(event, context) {
 
     try {
         if (event.httpMethod === 'GET') {
-            const { data: topScores, error } = await supabase
+            // Check if we should return all scores (for rank calculation)
+            const queryParams = event.queryStringParameters || {};
+            const returnAll = queryParams.all === 'true';
+            
+            let query = supabase
                 .from('reaction_scores')
                 .select('*')
-                .order('score', { ascending: true })
-                .limit(5);
+                .order('score', { ascending: true });
+            
+            // Only limit to 5 if not requesting all scores
+            if (!returnAll) {
+                query = query.limit(5);
+            }
+            
+            const { data: scores, error } = await query;
 
             if (error) throw error;
 
-            console.log('GET success, returning scores:', topScores);
+            console.log('GET success, returning scores:', scores.length, 'entries');
             return {
                 statusCode: 200,
                 headers,
-                body: JSON.stringify(topScores)
+                body: JSON.stringify(scores)
             };
         }
 
