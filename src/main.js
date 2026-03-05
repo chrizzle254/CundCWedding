@@ -626,15 +626,61 @@ function handleGameClick() {
     endGame();
 }
 
-function endGame() {
+/**
+ * Calculate what rank the current score would achieve
+ */
+async function calculateRank(score) {
+    try {
+        const response = await fetch('/.netlify/functions/leaderboard');
+        if (!response.ok) return null;
+        
+        const leaderboard = await response.json();
+        
+        // Find position where this score would be inserted
+        let rank = 1;
+        for (const entry of leaderboard) {
+            if (score >= entry.score) {
+                break;
+            }
+            rank++;
+        }
+        
+        return rank;
+    } catch (error) {
+        console.error('Error calculating rank:', error);
+        return null;
+    }
+}
+
+async function endGame() {
     const gameOverModal = document.getElementById('gameOverModal');
     const finalScoreDisplay = document.getElementById('finalScore');
+    const playerRankDisplay = document.getElementById('playerRank');
     const startButton = document.getElementById('startGame');
     const instructions = document.getElementById('instructions');
     
     if (!gameOverModal || !finalScoreDisplay || !startButton || !instructions) return;
 
     finalScoreDisplay.textContent = game.reactionTime;
+    
+    // Calculate and display rank
+    if (playerRankDisplay) {
+        playerRankDisplay.textContent = 'Berechne Platzierung...';
+        const rank = await calculateRank(game.reactionTime);
+        
+        if (rank !== null) {
+            // Add medal emoji for top 3
+            let rankText = `Platz ${rank}`;
+            if (rank === 1) rankText = '🥇 ' + rankText;
+            else if (rank === 2) rankText = '🥈 ' + rankText;
+            else if (rank === 3) rankText = '🥉 ' + rankText;
+            
+            playerRankDisplay.textContent = rankText;
+        } else {
+            playerRankDisplay.textContent = '';
+        }
+    }
+    
     gameOverModal.classList.remove('hidden');
     setLightState('idle');
     instructions.textContent = 'Klicke auf das Licht sobald es grün wird!';
