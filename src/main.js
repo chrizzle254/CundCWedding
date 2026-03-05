@@ -659,7 +659,7 @@ async function calculateRank(score) {
     }
 }
 
-async function endGame() {
+function endGame() {
     const gameOverModal = document.getElementById('gameOverModal');
     const finalScoreDisplay = document.getElementById('finalScore');
     const playerRankDisplay = document.getElementById('playerRank');
@@ -668,30 +668,35 @@ async function endGame() {
     
     if (!gameOverModal || !finalScoreDisplay || !startButton || !instructions) return;
 
+    // Show modal immediately
     finalScoreDisplay.textContent = game.reactionTime;
-    
-    // Calculate and display rank
-    if (playerRankDisplay) {
-        playerRankDisplay.textContent = 'Berechne Platzierung...';
-        const rank = await calculateRank(game.reactionTime);
-        
-        if (rank !== null) {
-            // Add medal emoji for top 3
-            let rankText = `Platz ${rank}`;
-            if (rank === 1) rankText = '🥇 ' + rankText;
-            else if (rank === 2) rankText = '🥈 ' + rankText;
-            else if (rank === 3) rankText = '🥉 ' + rankText;
-            
-            playerRankDisplay.textContent = rankText;
-        } else {
-            playerRankDisplay.textContent = '';
-        }
-    }
-    
     gameOverModal.classList.remove('hidden');
     setLightState('idle');
     instructions.textContent = 'Klicke auf das Licht sobald es grün wird!';
     startButton.disabled = false;
+    
+    // Calculate and display rank asynchronously (non-blocking)
+    if (playerRankDisplay) {
+        playerRankDisplay.textContent = 'Berechne Platzierung...';
+        
+        // Calculate rank in background
+        calculateRank(game.reactionTime).then(rank => {
+            if (rank !== null) {
+                // Add medal emoji for top 3
+                let rankText = `Platz ${rank}`;
+                if (rank === 1) rankText = '🥇 ' + rankText;
+                else if (rank === 2) rankText = '🥈 ' + rankText;
+                else if (rank === 3) rankText = '🥉 ' + rankText;
+                
+                playerRankDisplay.textContent = rankText;
+            } else {
+                playerRankDisplay.textContent = '';
+            }
+        }).catch(error => {
+            console.error('Error displaying rank:', error);
+            playerRankDisplay.textContent = '';
+        });
+    }
 }
 
 async function saveScore() {
