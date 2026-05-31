@@ -315,6 +315,27 @@
         .dep-item:hover { border-color: var(--border-bright); }
         .dep-item.done { opacity: 0.45; }
         .dep-item.done .dep-what { text-decoration: line-through; }
+        .dep-item.checked-off { opacity: 0.35; border-color: var(--green-dim); }
+        .dep-item.checked-off .dep-what { text-decoration: line-through; color: var(--text-muted); }
+        .dep-check-btn {
+            margin-left: auto;
+            align-self: flex-start;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .dep-check-btn:hover { border-color: var(--green); color: var(--green); }
+        .dep-item.checked-off .dep-check-btn { border-color: var(--green-dim); color: var(--green); }
+        .dep-item.checked-off .dep-check-btn:hover { border-color: var(--red); color: var(--red); }
+        .dep-item-inner { display: flex; gap: 0.5rem; align-items: flex-start; }
         .dep-when {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.65rem;
@@ -374,6 +395,11 @@
             flex-wrap: wrap;
             align-items: center;
             margin-bottom: 2rem;
+        }
+        .countdown-nums-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
         }
         .countdown-item { text-align: center; }
         .countdown-num {
@@ -437,8 +463,37 @@
         /* ── Responsive ── */
         @media (max-width: 640px) {
             .container { padding: 1rem; }
-            .header { padding: 1rem; }
+            .header { padding: 0.75rem 1rem; gap: 0.5rem; }
+            .header-title { font-size: 0.75rem; }
+            #live-clock { display: none; }
             .timeline-grid { grid-template-columns: 1fr; }
+
+            /* Countdown: single row, numbers bigger and centered */
+            .countdown-bar {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+                padding: 1.25rem 1rem;
+            }
+            .countdown-nums-row {
+                display: flex;
+                align-items: flex-end;
+                gap: 0.5rem;
+            }
+            .countdown-num {
+                font-size: 2.8rem;
+            }
+            .countdown-sep {
+                font-size: 2rem;
+                padding-bottom: 0.6rem;
+            }
+            .countdown-label {
+                font-size: 0.6rem;
+            }
+            .progress-wrap {
+                width: 100%;
+                min-width: unset;
+            }
         }
     </style>
 </head>
@@ -464,24 +519,26 @@
 
     <!-- Countdown -->
     <div class="countdown-bar fade-in" id="countdown-bar">
-        <div class="countdown-item">
-            <div class="countdown-num" id="cd-days">--</div>
-            <div class="countdown-label">days</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-item">
-            <div class="countdown-num" id="cd-hours">--</div>
-            <div class="countdown-label">hours</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-item">
-            <div class="countdown-num" id="cd-mins">--</div>
-            <div class="countdown-label">mins</div>
-        </div>
-        <div class="countdown-sep">:</div>
-        <div class="countdown-item">
-            <div class="countdown-num" id="cd-secs">--</div>
-            <div class="countdown-label">secs</div>
+        <div class="countdown-nums-row">
+            <div class="countdown-item">
+                <div class="countdown-num" id="cd-days">--</div>
+                <div class="countdown-label">days</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+                <div class="countdown-num" id="cd-hours">--</div>
+                <div class="countdown-label">hours</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+                <div class="countdown-num" id="cd-mins">--</div>
+                <div class="countdown-label">mins</div>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-item">
+                <div class="countdown-num" id="cd-secs">--</div>
+                <div class="countdown-label">secs</div>
+            </div>
         </div>
         <div class="progress-wrap">
             <div class="progress-label">
@@ -688,7 +745,7 @@ const TIMELINE_DATA = {
 };
 
 const DEPS_DATA = [
-    { when: 'Mittwoch',          wer: 'Carsten',                      was: 'Getränke für Hasselgrund kaufen + zu Hasselgrund mit Cathrin', done: true },
+    { when: 'Mittwoch',          wer: 'Carsten',                      was: 'Getränke für Hasselgrund kaufen + zu Hasselgrund mit Cathrin'},
     { when: 'Mittwoch',          wer: 'Kählers',                      was: 'Hasselgrund preppen' },
     { when: 'Mittwoch',          wer: 'Gisela',                       was: 'Golf schmücken mit Christoph' },
     { when: 'Mittwoch',          wer: 'Gisela, Todde, Matthias',      was: 'Zelt aufbauen in Achterwehr' },
@@ -817,26 +874,75 @@ function renderTimeline() {
 // RENDER: DEPENDENCIES
 // ═══════════════════════════════════════
 let activeDayFilter = 'all';
+let checkedDeps = new Set();
+
+const DEPS_API = '/.netlify/functions/deps';
+
+async function fetchCheckedDeps() {
+    try {
+        const res = await fetch(DEPS_API);
+        if (!res.ok) throw new Error('fetch failed');
+        const indices = await res.json();
+        checkedDeps = new Set(indices);
+    } catch (err) {
+        console.warn('Could not load dep checks from API, falling back to empty state:', err);
+        checkedDeps = new Set();
+    }
+    renderDeps(activeDayFilter);
+}
+
+async function toggleDep(idx) {
+    const nowChecked = !checkedDeps.has(idx);
+
+    // Optimistic update
+    if (nowChecked) checkedDeps.add(idx); else checkedDeps.delete(idx);
+    renderDeps(activeDayFilter);
+
+    try {
+        const res = await fetch(DEPS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idx, checked: nowChecked }),
+        });
+        if (!res.ok) throw new Error('save failed');
+    } catch (err) {
+        // Revert optimistic update on error
+        console.error('Failed to persist dep toggle:', err);
+        if (nowChecked) checkedDeps.delete(idx); else checkedDeps.add(idx);
+        renderDeps(activeDayFilter);
+    }
+}
 
 function renderDeps(dayFilter) {
     const grid = document.getElementById('dep-grid');
-    const filtered = DEPS_DATA.filter(d => {
+    const filtered = DEPS_DATA.map((d, i) => ({ ...d, _origIdx: i })).filter(d => {
         if (dayFilter === 'all') return true;
         return d.when.startsWith(dayFilter);
     });
 
     grid.innerHTML = filtered.map(d => {
+        const idx = d._origIdx;
+        const isChecked = checkedDeps.has(idx);
+        const isDoneFixed = !!d.done; // from source data, can't untoggle
         const dayKey = DAY_ORDER.find(k => d.when.startsWith(k)) || '';
         const dayClass = DAY_CLASS[dayKey] || '';
+        const checkedClass = isChecked ? (isDoneFixed ? 'done' : 'checked-off') : '';
+        const btnLabel = isChecked && !isDoneFixed ? '✓ done — undo?' : '[ mark done ]';
+
         return `
-            <div class="dep-item ${d.done ? 'done' : ''}">
-                <div class="dep-when mono">
-                    <span class="day-badge ${dayClass}" style="margin-right:0.3rem">${d.when.replace(dayKey,'').trim() || dayKey}</span>
-                    ${d.when.replace(dayKey,'').trim() && dayKey ? `<span style="color:var(--text-muted);font-size:0.65rem">${dayKey}</span>` : ''}
+            <div class="dep-item ${checkedClass}" id="dep-${idx}">
+                <div class="dep-item-inner">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:0.35rem;">
+                        <div class="dep-when mono">
+                            <span class="day-badge ${dayClass}" style="margin-right:0.3rem">${d.when.replace(dayKey,'').trim() || dayKey}</span>
+                            ${d.when.replace(dayKey,'').trim() && dayKey ? `<span style="color:var(--text-muted);font-size:0.65rem">${dayKey}</span>` : ''}
+                        </div>
+                        <div class="dep-who">→ ${d.wer}</div>
+                        <div class="dep-what">${d.was}</div>
+                        ${isDoneFixed ? `<div class="dep-status">✓ done</div>` : ''}
+                    </div>
+                    ${!isDoneFixed ? `<button class="dep-check-btn" onclick="toggleDep(${idx})">${btnLabel}</button>` : ''}
                 </div>
-                <div class="dep-who">→ ${d.wer}</div>
-                <div class="dep-what">${d.was}</div>
-                ${d.done ? `<div class="dep-status">✓ done</div>` : ''}
             </div>
         `;
     }).join('');
@@ -911,7 +1017,7 @@ function initFadeIn() {
 document.addEventListener('DOMContentLoaded', () => {
     renderMatrix('all');
     renderTimeline();
-    renderDeps('all');
+    fetchCheckedDeps(); // loads from Supabase, then renders deps
     updateCountdown();
     updateClock();
     setInterval(updateCountdown, 1000);
