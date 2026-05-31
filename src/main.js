@@ -341,7 +341,7 @@ function populateAgenda() {
             const titleEl = document.createElement("div");
             titleEl.className = "text-sm font-semibold font-montserrat";
             titleEl.style.color = "var(--pine-900)";
-            titleEl.textContent = `${item.time}: ${item.icon} ${item.title}`;
+            titleEl.textContent = `${item.icon} ${item.time}: ${item.title}`;
             div.appendChild(titleEl);
 
             const descEl = document.createElement("p");
