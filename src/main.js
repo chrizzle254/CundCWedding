@@ -279,6 +279,12 @@ function populateAgenda() {
                     icon: "🥂"
                 },
                 {
+                    time: "15:30 Uhr",
+                    title: "Theater bzw Freie Trauung",
+                    description: "Todde fühlt uns auf den Zahn und lässt uns das Ja-Wort aufsagen.",
+                    icon: "🤼"
+                },
+                {
                     time: "18 Uhr",
                     title: "Dinner, Spaß & Spiele",
                     description: "Wir lassen uns kulinarisch verwöhnen und genießen den Abend.",
