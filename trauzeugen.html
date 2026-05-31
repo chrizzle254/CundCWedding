@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C&C // TRAUZEUGEN — Mission Briefing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0d1117;
+            --bg-surface: #161b22;
+            --bg-card: #1c2128;
+            --border: #30363d;
+            --border-bright: #484f58;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #484f58;
+            --green: #3fb950;
+            --green-dim: #1a4726;
+            --blue: #58a6ff;
+            --blue-dim: #1c3557;
+            --yellow: #d29922;
+            --yellow-dim: #341a00;
+            --red: #f85149;
+            --red-dim: #3d1012;
+            --purple: #bc8cff;
+            --purple-dim: #2d1f52;
+            --orange: #f0883e;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Terminal scanline effect */
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.03) 2px,
+                rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        code, .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* ── Header ── */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            position: sticky;
+            top: 0;
+            background: rgba(13,17,23,0.9);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+        }
+        .header-logo {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--green);
+            border: 1px solid var(--green);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+        }
+        .header-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .header-title span { color: var(--text-primary); }
+        .header-badge {
+            margin-left: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--yellow);
+            border: 1px solid var(--yellow);
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+        }
+        #live-clock {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* ── Section headers ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+            margin-top: 3rem;
+        }
+        .section-header:first-child { margin-top: 0; }
+        .section-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .dot-red { background: var(--red); }
+        .dot-yellow { background: var(--yellow); }
+        .dot-green { background: var(--green); }
+
+        /* ── Person filter pills ── */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            align-items: center;
+        }
+        .filter-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-right: 0.25rem;
+        }
+        .pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .pill:hover { border-color: var(--border-bright); color: var(--text-primary); }
+        .pill.active { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+        .pill.active[data-person="Larissa"] { background: var(--purple-dim); border-color: var(--purple); color: var(--purple); }
+        .pill.active[data-person="Lisa"] { background: #1a3520; border-color: #56d364; color: #56d364; }
+        .pill.active[data-person="Philine"] { background: var(--yellow-dim); border-color: var(--yellow); color: var(--yellow); }
+        .pill.active[data-person="Lorenz"] { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+        .pill.active[data-person="Nils"] { background: #2d1f3d; border-color: #d2a8ff; color: #d2a8ff; }
+        .pill.active[data-person="Tom"] { background: #1f2d1a; border-color: #7ee787; color: #7ee787; }
+
+        /* ── Matrix table ── */
+        .matrix-wrap { overflow-x: auto; }
+        table.matrix {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.82rem;
+        }
+        table.matrix th {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: left;
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            background: var(--bg-surface);
+        }
+        table.matrix th.person-col {
+            text-align: center;
+            min-width: 80px;
+        }
+        table.matrix td {
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid rgba(48,54,61,0.5);
+            vertical-align: middle;
+        }
+        table.matrix tr:last-child td { border-bottom: none; }
+        table.matrix tr:hover td { background: rgba(255,255,255,0.02); }
+        table.matrix td.person-col { text-align: center; }
+        .check { color: var(--green); font-size: 1rem; }
+        .dash { color: var(--text-muted); font-size: 0.8rem; }
+        .day-badge {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            margin-right: 0.4rem;
+            vertical-align: middle;
+        }
+
+        /* ── Timeline ── */
+        .timeline-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+        }
+        .day-block { }
+        .day-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0.6rem 1.25rem;
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .day-title span { color: var(--text-secondary); font-weight: 600; }
+        .event-list { padding: 0.75rem 0; }
+        .event-item {
+            padding: 0.55rem 1.25rem;
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 0.75rem;
+            align-items: start;
+            border-left: 2px solid transparent;
+            transition: background 0.1s;
+        }
+        .event-item:hover { background: rgba(255,255,255,0.02); }
+        .event-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            color: var(--blue);
+            padding-top: 0.1rem;
+            white-space: nowrap;
+        }
+        .event-time.no-time { color: var(--text-muted); }
+        .event-content { }
+        .event-what {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .event-detail {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+        }
+        .event-who {
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            margin-top: 0.3rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        /* ── Dependencies ── */
+        .dep-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.75rem;
+            padding: 1.25rem;
+        }
+        .dep-item {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            transition: border-color 0.15s;
+        }
+        .dep-item:hover { border-color: var(--border-bright); }
+        .dep-item.done { opacity: 0.45; }
+        .dep-item.done .dep-what { text-decoration: line-through; }
+        .dep-when {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--blue);
+            letter-spacing: 0.03em;
+        }
+        .dep-who {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        .dep-what {
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+        .dep-status {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--green);
+        }
+
+        /* ── Day color coding ── */
+        .day-di  { background: rgba(188,140,255,0.12); border-color: #bc8cff; color: #bc8cff; }
+        .day-mi  { background: rgba(88,166,255,0.12); border-color: #58a6ff; color: #58a6ff; }
+        .day-do  { background: rgba(63,185,80,0.12);  border-color: #3fb950; color: #3fb950; }
+        .day-fr  { background: rgba(240,136,62,0.12); border-color: #f0883e; color: #f0883e; }
+        .day-sa  { background: rgba(248,81,73,0.12);  border-color: #f85149; color: #f85149; }
+        .day-so  { background: rgba(210,153,34,0.12); border-color: #d29922; color: #d29922; }
+
+        /* ── Glitch title effect ── */
+        @keyframes glitch1 {
+            0%, 90%, 100% { clip-path: none; transform: none; }
+            92% { clip-path: polygon(0 20%, 100% 20%, 100% 40%, 0 40%); transform: translate(-3px, 0); }
+            94% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); transform: translate(3px, 0); }
+            96% { clip-path: none; transform: none; }
+        }
+        .glitch {
+            position: relative;
+            display: inline-block;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--green);
+            animation: glitch1 8s infinite;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── Countdown bar ── */
+        .countdown-bar {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .countdown-item { text-align: center; }
+        .countdown-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--green);
+            line-height: 1;
+        }
+        .countdown-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.2rem;
+        }
+        .countdown-sep {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            padding-bottom: 0.5rem;
+            align-self: flex-end;
+        }
+        .progress-wrap {
+            flex: 1;
+            min-width: 200px;
+        }
+        .progress-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .progress-track {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green), #56d364);
+            border-radius: 3px;
+            transition: width 1s linear;
+        }
+
+        /* ── Scroll fade in ── */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .fade-in.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .container { padding: 1rem; }
+            .header { padding: 1rem; }
+            .timeline-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-logo">C&C</div>
+    <div class="header-title"><span>TRAUZEUGEN</span> // mission briefing</div>
+    <div id="live-clock" class="mono">--:--:--</div>
+    <div class="header-badge">TOP SECRET</div>
+</header>
+
+<div class="container">
+
+    <!-- Hero -->
+    <div style="margin: 2rem 0 2.5rem;">
+        <div class="glitch">// HOCHZEIT 06.06.2026</div>
+        <p style="font-family:'JetBrains Mono',monospace; font-size:0.8rem; color:var(--text-muted); margin-top:0.5rem;">
+            Schloss Bredeneek &nbsp;·&nbsp; 15:00 Uhr &nbsp;·&nbsp; Alle Zeiten sind mission-critical
+        </p>
+    </div>
+
+    <!-- Countdown -->
+    <div class="countdown-bar fade-in" id="countdown-bar">
+        <div class="countdown-item">
+            <div class="countdown-num" id="cd-days">--</div>
+            <div class="countdown-label">days</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-item">
+            <div class="countdown-num" id="cd-hours">--</div>
+            <div class="countdown-label">hours</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-item">
+            <div class="countdown-num" id="cd-mins">--</div>
+            <div class="countdown-label">mins</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-item">
+            <div class="countdown-num" id="cd-secs">--</div>
+            <div class="countdown-label">secs</div>
+        </div>
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <span>MISSION READINESS</span>
+                <span id="prog-pct">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 1: TRAUZEUGEN MATRIX
+    ══════════════════════════════════════════ -->
+    <div class="section-header fade-in">
+        <span class="section-label mono">01</span>
+        <span class="section-title">Trauzeugen Assignment Matrix</span>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="card fade-in">
+        <div class="card-header">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            &nbsp; trauzeugen_matrix.json &nbsp;·&nbsp; 6 agents &nbsp;·&nbsp; readonly
+        </div>
+        <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border);">
+            <div class="filter-bar" id="filter-bar">
+                <span class="filter-label">filter:</span>
+                <button class="pill active" data-person="all" onclick="filterMatrix('all')">all</button>
+                <button class="pill" data-person="Larissa" onclick="filterMatrix('Larissa')">Larissa</button>
+                <button class="pill" data-person="Lisa" onclick="filterMatrix('Lisa')">Lisa</button>
+                <button class="pill" data-person="Philine" onclick="filterMatrix('Philine')">Philine</button>
+                <button class="pill" data-person="Lorenz" onclick="filterMatrix('Lorenz')">Lorenz</button>
+                <button class="pill" data-person="Nils" onclick="filterMatrix('Nils')">Nils</button>
+                <button class="pill" data-person="Tom" onclick="filterMatrix('Tom')">Tom</button>
+            </div>
+        </div>
+        <div class="matrix-wrap">
+            <table class="matrix" id="matrix-table">
+                <thead>
+                    <tr>
+                        <th>Tag</th>
+                        <th>Zeit</th>
+                        <th>Aufgabe</th>
+                        <th class="person-col">Larissa</th>
+                        <th class="person-col">Lisa</th>
+                        <th class="person-col">Philine</th>
+                        <th class="person-col">Lorenz</th>
+                        <th class="person-col">Nils</th>
+                        <th class="person-col">Tom</th>
+                    </tr>
+                </thead>
+                <tbody id="matrix-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 2: FULL TIMELINE
+    ══════════════════════════════════════════ -->
+    <div class="section-header fade-in">
+        <span class="section-label mono">02</span>
+        <span class="section-title">Vollständiger Zeitplan (Di – So)</span>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="timeline-grid fade-in" id="timeline-grid"></div>
+
+    <!-- ═══════════════════════════════════════
+         SECTION 3: DEPENDENCIES
+    ══════════════════════════════════════════ -->
+    <div class="section-header fade-in">
+        <span class="section-label mono">03</span>
+        <span class="section-title">External Dependencies</span>
+        <div class="section-line"></div>
+    </div>
+
+    <div class="filter-bar fade-in" id="dep-filter-bar">
+        <span class="filter-label">filter by day:</span>
+        <button class="pill active" data-day="all" onclick="filterDeps('all')">all</button>
+        <button class="pill" data-day="Dienstag" onclick="filterDeps('Dienstag')">Di</button>
+        <button class="pill" data-day="Mittwoch" onclick="filterDeps('Mittwoch')">Mi</button>
+        <button class="pill" data-day="Donnerstag" onclick="filterDeps('Donnerstag')">Do</button>
+        <button class="pill" data-day="Freitag" onclick="filterDeps('Freitag')">Fr</button>
+        <button class="pill" data-day="Samstag" onclick="filterDeps('Samstag')">Sa</button>
+        <button class="pill" data-day="Sonntag" onclick="filterDeps('Sonntag')">So</button>
+    </div>
+
+    <div class="card fade-in">
+        <div class="card-header">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            &nbsp; dependencies.log &nbsp;·&nbsp; external actors &nbsp;·&nbsp; readonly
+        </div>
+        <div class="dep-grid" id="dep-grid"></div>
+    </div>
+
+    <div style="height: 4rem;"></div>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════
+
+const MATRIX_DATA = [
+    { tag: 'Mittwoch',    zeit: '16–17 Uhr', aufgabe: 'Ankunft (Cathrin holt ab)',                 L:1, Li:0, Ph:0, Lo:0, N:0, T:0 },
+    { tag: 'Donnerstag',  zeit: '12:15',     aufgabe: 'Standesamt – mit C&C anmelden',             L:1, Li:1, Ph:1, Lo:1, N:1, T:1 },
+    { tag: 'Donnerstag',  zeit: '13:00',     aufgabe: 'Seifenblasen + Sektempfang verteilen',      L:1, Li:1, Ph:1, Lo:1, N:1, T:1 },
+    { tag: 'Donnerstag',  zeit: '13:30',     aufgabe: 'Gäste für Hasselgrund & Autocorso mobilisieren', L:1, Li:1, Ph:1, Lo:1, N:1, T:1 },
+    { tag: 'Donnerstag',  zeit: '15:00',     aufgabe: 'Baguette & Dips mitbringen (Hasselgrund)',  L:0, Li:0, Ph:0, Lo:0, N:1, T:0 },
+    { tag: 'Donnerstag',  zeit: '~22:00',    aufgabe: 'Hasselgrund aufräumen helfen',              L:1, Li:1, Ph:1, Lo:1, N:1, T:1 },
+    { tag: 'Freitag',     zeit: '—',         aufgabe: 'Bredeneek preppen',                         L:1, Li:0, Ph:0, Lo:0, N:0, T:0 },
+    { tag: 'Freitag',     zeit: '17:00',     aufgabe: 'Preparty Hof Sonnenmeer',                   L:-1,Li:-1,Ph:-1,Lo:1, N:1, T:1 },
+    { tag: 'Samstag',     zeit: '12:00',     aufgabe: 'Bredeneek: Christoph treffen',              L:0, Li:0, Ph:0, Lo:1, N:1, T:1 },
+    { tag: 'Samstag',     zeit: '13:00',     aufgabe: 'Bredeneek: Cathrin treffen',                L:1, Li:1, Ph:1, Lo:0, N:0, T:0 },
+    { tag: 'Samstag',     zeit: '15:00',     aufgabe: 'Tiramisu dem Caterer (Saleh) übergeben',    L:0, Li:1, Ph:1, Lo:1, N:0, T:0 },
+    { tag: 'Samstag',     zeit: '15:00',     aufgabe: 'Mit Cathrin versteckt warten bis Zeremonie',L:1, Li:1, Ph:1, Lo:0, N:0, T:0 },
+    { tag: 'Sonntag',     zeit: '11:00',     aufgabe: 'Katerfrühstück in Achterwehr',              L:1, Li:1, Ph:1, Lo:1, N:1, T:1 },
+];
+
+const DAY_ORDER = ['Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+
+const DAY_CLASS = {
+    'Dienstag':   'day-di',
+    'Mittwoch':   'day-mi',
+    'Donnerstag': 'day-do',
+    'Freitag':    'day-fr',
+    'Samstag':    'day-sa',
+    'Sonntag':    'day-so',
+};
+
+const TIMELINE_DATA = {
+    'Dienstag': [
+        { time: '',       what: 'Packen',                  detail: 'Hemd, Ringe, Papiere, Reisepässe, Jutebeutel, Unterhosen, Kleider, Anzug, Schuhe, Tüte Schleier, Spiegel+Aufschrift, Airwrap, Steamer, Langes Kabel, Seifenblasen, Kissen Cathrin, Decken' },
+        { time: '',       what: 'Zu Matthias und Melli fahren' },
+        { time: '',       what: 'Golf putzen',              who: 'Christoph' },
+    ],
+    'Mittwoch': [
+        { time: '09:00',  what: 'Einkaufen',               detail: 'Cathrin zu Kählers · Bolo, Nudeln, Parmesan, Schmuck für Golf, Daim Torte', who: 'Christoph' },
+        { time: '',       what: 'Bolo kochen',              who: 'Christoph' },
+        { time: '10:00',  what: 'Strauß besorgen für Standesamt', who: 'Cathrin' },
+        { time: '',       what: 'Hasselgrund schmücken',    detail: 'Schilder basteln · Blumen verteilen · Deko · Getränke · Daimtorte', who: 'C&C' },
+        { time: '15:30',  what: 'Zelt aufbauen',            who: 'Christoph' },
+        { time: '16–17',  what: 'Larissa abholen',          who: 'Cathrin' },
+        { time: '',       what: 'Bolo + Nudeln nach Hasselgrund bringen', who: 'Christoph' },
+        { time: '',       what: 'Golf schmücken mit weißen Bändchen', who: 'Christoph' },
+        { time: '',       what: 'Cathrin schläft bei Kählers', who: 'Cathrin' },
+        { time: '',       what: 'Christoph schläft bei Schroeders', who: 'Christoph' },
+    ],
+    'Donnerstag': [
+        { time: '',       what: 'Packen',                  detail: 'Reisepass, Sektgläser, Sekt, Papiere, Seifenblasen' },
+        { time: '',       what: 'Anzug / Hemd bügeln' },
+        { time: '',       what: 'Frühstücken + Kaffee + Home workout' },
+        { time: '11:30',  what: 'Fahren zum Standesamt' },
+        { time: '12:00',  what: 'Treffen Standesamt' },
+        { time: '12:15',  what: 'Alle hoch + Anmeldung im Standesamt mit Trauzeugen' },
+        { time: '12:30',  what: '💍 HEIRATEN' },
+        { time: '13:00',  what: 'Sektempfang' },
+        { time: '14:00',  what: 'Autocorso Hasselgrund' },
+        { time: '',       what: 'Ankunft Hasselgrund · Getränke · Bolo warm machen · Nudeln kochen' },
+        { time: '~22:00', what: 'Aufräumen',               who: 'C&C' },
+    ],
+    'Freitag': [
+        { time: '',       what: 'Anzug / Hemd bügeln · Rasieren · Home workout', who: 'Christoph' },
+        { time: '',       what: 'Entscheiden: drinnen oder draußen heiraten' },
+        { time: '',       what: 'Gartenklappstühle besorgen (~15)',              who: 'Christoph' },
+        { time: '',       what: 'Hüpfburg abholen',                              who: 'Christoph' },
+        { time: '',       what: 'Cornhole abholen',                              who: 'Christoph' },
+        { time: '',       what: 'Bierbänke sicherstellen (Todde & Catha)',       who: 'Christoph' },
+        { time: '10:00',  what: 'Blumen abholen',                                who: 'Cathrin' },
+        { time: '',       what: 'Bredeneek Setup',         detail: 'Hüpfburg aufbauen · Bierbänke draußen · Traubogen · Blumen verteilen · Spiegel Tischordnung · Kabeltrommel · Cornhole · Tischkarten · WC Box preppen · Zweites Kleid steamen', who: 'C&C' },
+        { time: '17:00',  what: 'Nach Sonnenmeer fahren',                        who: 'Christoph' },
+        { time: '22:00',  what: 'Nach Hause (Christoph zu Schroeders)' },
+    ],
+    'Samstag': [
+        { time: '09:00',  what: 'Packen',                  detail: 'Bier für Trauzeugen · Ringe · Kühlpack · Ehegelübde · Tasche frische Klamotten · Bargeld' },
+        { time: '10:00',  what: 'Duschen',                  who: 'Christoph' },
+        { time: '11:00',  what: 'Anziehen',                 who: 'Christoph' },
+        { time: '11:30',  what: 'Los nach Bredeneek',       who: 'Christoph' },
+        { time: '12:00',  what: 'Bredeneek ankommen',       detail: 'Tischkarten prüfen · Tische checken · DJ Setup · Trauzeugen Bier · Tiramisu an Saleh', who: 'Christoph' },
+        { time: '13:30',  what: 'Fotoshooting' },
+        { time: '15:00',  what: 'Gäste begrüßen',          detail: 'Cathrin versteckt mit Larissa, Philine, Lisa' },
+        { time: '15:30',  what: '💒 Freie Trauung' },
+        { time: '16:30',  what: 'Gruppenbild + Sekt & Snacks' },
+        { time: '~18:00', what: 'Buffet eröffnen' },
+        { time: '22:00',  what: '💃 First Dance + Party' },
+        { time: '03:00',  what: 'Ende · zu Gasthof pennen' },
+    ],
+    'Sonntag': [
+        { time: '08:30',  what: 'Aufstehen · Duschen · Checkout' },
+        { time: '09:00',  what: 'Am Schloss sein' },
+        { time: '',       what: 'Aufräumen',               detail: 'Bierbänke · Geschirr in Küche · Blumen einsammeln · Deko · Spiegel · Tischkarten · Geschenke · Hüpfburg auf Anhänger · Cornhole · Traubogen · Polaroid · WC Sachen' },
+        { time: '10:30',  what: 'Abfahrt nach Achterwehr' },
+        { time: '',       what: 'Bänke aufbauen · Frühstück & Chill' },
+        { time: '',       what: 'Diverse Gäste zum Bahnhof bringen' },
+        { time: '19:00',  what: 'Nach HH düsen' },
+    ],
+};
+
+const DEPS_DATA = [
+    { when: 'Mittwoch',          wer: 'Carsten',                      was: 'Getränke für Hasselgrund kaufen + zu Hasselgrund mit Cathrin', done: true },
+    { when: 'Mittwoch',          wer: 'Kählers',                      was: 'Hasselgrund preppen' },
+    { when: 'Mittwoch',          wer: 'Gisela',                       was: 'Golf schmücken mit Christoph' },
+    { when: 'Mittwoch',          wer: 'Gisela, Todde, Matthias',      was: 'Zelt aufbauen in Achterwehr' },
+    { when: 'Donnerstag',        wer: 'Kählers',                      was: 'Sekt einpacken für Standesamt Anstoßen' },
+    { when: 'Donnerstag',        wer: 'Michael, Catha, Rainer',       was: 'Fotos mit eigener Kamera für den gesamten Tag' },
+    { when: 'Donnerstag 11:30',  wer: 'Kählers',                      was: 'Cathrin mit zum Standesamt nehmen' },
+    { when: 'Donnerstag 12:15',  wer: 'Trauzeugen',                   was: 'Mit uns zum Standesamt anmelden' },
+    { when: 'Donnerstag 13:00',  wer: 'Trauzeugen + Nicole',          was: 'Seifenblasen + Sektempfang organisieren und verteilen' },
+    { when: 'Donnerstag 13:30',  wer: 'Trauzeugen + Eltern',          was: 'Leute für Hasselgrund & Autocorso mobilisieren' },
+    { when: 'Donnerstag 15:00',  wer: 'Gisela',                       was: 'Applecrumble & Eis mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Matthias & Melli',             was: 'Nudelsalat mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Vivi & Frank',                 was: 'Obstteller mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Nils & Toni',                  was: 'Baguette & Dips mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Carsten & Nicole',             was: 'Kuchen mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Rena',                         was: 'Kuchen mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Todde & Catha',                was: 'Grüner Salat mitbringen' },
+    { when: 'Donnerstag 15:00',  wer: 'Rainer',                       was: 'Kaffeetorte mitbringen' },
+    { when: 'Donnerstag ~22:00', wer: 'Trauzeugen',                   was: 'Helfen aufräumen 🙏' },
+    { when: 'Freitag',           wer: 'Todde & Catha',                was: 'Bierbänke abholen + in Bredeneek abstellen' },
+    { when: 'Freitag',           wer: 'Matthias',                     was: 'Christoph den Passat überlassen' },
+    { when: 'Freitag',           wer: 'Angela Gruber',                was: 'Zuhause sein, damit Cornhole abgeholt werden kann' },
+    { when: 'Freitag',           wer: 'Michael',                      was: 'Kabeltrommel bereitstellen' },
+    { when: 'Freitag',           wer: 'Vivi & Frank, Carsten & Nicole, Larissa', was: 'Bredeneek preppen' },
+    { when: 'Freitag',           wer: 'Vivi & Frank, Carsten & Nicole, Rainer',  was: 'Gartenstühle bereitstellen für Bredeneek' },
+    { when: 'Freitag',           wer: 'Carsten & Nicole',             was: 'Traubogen besorgen' },
+    { when: 'Freitag',           wer: 'Bredeneek Hosts',              was: 'Tische preppen und eindecken' },
+    { when: 'Samstag 12:00',     wer: 'Trauzeugen Christoph',         was: 'Christoph in Bredeneek treffen' },
+    { when: 'Samstag 13:00',     wer: 'Trauzeugen Cathrin',           was: 'Cathrin in Bredeneek treffen' },
+    { when: 'Samstag 15:00',     wer: 'Lorenz & Lui',                 was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Philine & Jorrit',             was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Lisa & Harm',                  was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Melli & Matthias',             was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Catha & Todde',                was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Claudia',                      was: 'Kuchen Caterer geben' },
+    { when: 'Samstag 15:00',     wer: 'Rainer',                       was: 'Tiramisu Caterer geben' },
+    { when: 'Samstag 12:30',     wer: 'DJ Zeno',                      was: 'Aufbau DJ stuff' },
+    { when: 'Samstag 13:00',     wer: 'Foto Amanda',                  was: 'In Bredeneek uns treffen' },
+    { when: 'Samstag 14:00',     wer: 'Catering Saleh',               was: 'Shuttleservice starten + Leute abholen' },
+    { when: 'Samstag 15:00',     wer: 'Catering Saleh',               was: 'Sektempfang aufbauen · BBQ aufbauen · Buffet aufbauen' },
+    { when: 'Samstag 15:30',     wer: 'Todde',                        was: 'Freie Trauung machen' },
+    { when: 'Sonntag 03:00',     wer: 'Catering Saleh',               was: 'Alles abräumen + Shuttle nach Hause' },
+    { when: 'Sonntag 03:00',     wer: 'Matthias',                     was: 'Christoph den Passat überlassen, Jollef nehmen' },
+    { when: 'Sonntag',           wer: 'Bredeneek Hosts',              was: 'Geschirr spülen (lassen wir einfach da)' },
+    { when: 'Sonntag 09:00',     wer: 'Carsten & Nicole',             was: 'Bredeneek aufräumen helfen' },
+    { when: 'Sonntag 09:00',     wer: 'Gisela & Michael',             was: 'Frühstück in Achterwehr preppen' },
+    { when: 'Sonntag 09:00',     wer: 'Matthias',                     was: 'Dafür sorgen dass Gisela kein Herzkasper bekommt 😂' },
+    { when: 'Sonntag 10:00',     wer: 'Vivi & Frank',                 was: 'Kaffee besorgen + Brötchen besorgen' },
+];
+
+// ═══════════════════════════════════════
+// RENDER: MATRIX
+// ═══════════════════════════════════════
+let activeFilter = 'all';
+
+function renderMatrix(filter) {
+    const tbody = document.getElementById('matrix-body');
+    const persons = ['L','Li','Ph','Lo','N','T'];
+
+    tbody.innerHTML = MATRIX_DATA.map(row => {
+        // If filtering by person, hide rows where that person has 0
+        if (filter !== 'all') {
+            const map = { 'Larissa':'L','Lisa':'Li','Philine':'Ph','Lorenz':'Lo','Nils':'N','Tom':'T' };
+            const key = map[filter];
+            if (row[key] === 0) return '';
+        }
+
+        const dayClass = DAY_CLASS[row.tag] || '';
+        const cells = persons.map(p => {
+            const val = row[p];
+            if (val === 1)  return `<td class="person-col"><span class="check">✓</span></td>`;
+            if (val === -1) return `<td class="person-col"><span style="color:var(--yellow);font-size:0.7rem">?</span></td>`;
+            return `<td class="person-col"><span class="dash">·</span></td>`;
+        }).join('');
+
+        return `<tr>
+            <td><span class="day-badge ${dayClass}">${row.tag}</span></td>
+            <td class="mono" style="font-size:0.75rem;color:var(--blue);white-space:nowrap;">${row.zeit}</td>
+            <td>${row.aufgabe}</td>
+            ${cells}
+        </tr>`;
+    }).join('');
+}
+
+function filterMatrix(person) {
+    activeFilter = person;
+    document.querySelectorAll('#filter-bar .pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.person === person);
+    });
+    renderMatrix(person);
+}
+
+// ═══════════════════════════════════════
+// RENDER: TIMELINE
+// ═══════════════════════════════════════
+function renderTimeline() {
+    const grid = document.getElementById('timeline-grid');
+    grid.innerHTML = DAY_ORDER.map(day => {
+        const events = TIMELINE_DATA[day];
+        if (!events) return '';
+        const dayClass = DAY_CLASS[day] || '';
+
+        const items = events.map(ev => `
+            <div class="event-item">
+                <div class="event-time ${ev.time ? '' : 'no-time'}">${ev.time || '——'}</div>
+                <div class="event-content">
+                    <div class="event-what">${ev.what}</div>
+                    ${ev.detail ? `<div class="event-detail">${ev.detail}</div>` : ''}
+                    ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="card day-block">
+                <div class="day-title">
+                    <span class="day-badge ${dayClass}">${day}</span>
+                    <span>${day === 'Samstag' ? '⭐ Hochzeitstag' : day === 'Donnerstag' ? '💍 Standesamt' : ''}</span>
+                </div>
+                <div class="event-list">${items}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+// ═══════════════════════════════════════
+// RENDER: DEPENDENCIES
+// ═══════════════════════════════════════
+let activeDayFilter = 'all';
+
+function renderDeps(dayFilter) {
+    const grid = document.getElementById('dep-grid');
+    const filtered = DEPS_DATA.filter(d => {
+        if (dayFilter === 'all') return true;
+        return d.when.startsWith(dayFilter);
+    });
+
+    grid.innerHTML = filtered.map(d => {
+        const dayKey = DAY_ORDER.find(k => d.when.startsWith(k)) || '';
+        const dayClass = DAY_CLASS[dayKey] || '';
+        return `
+            <div class="dep-item ${d.done ? 'done' : ''}">
+                <div class="dep-when mono">
+                    <span class="day-badge ${dayClass}" style="margin-right:0.3rem">${d.when.replace(dayKey,'').trim() || dayKey}</span>
+                    ${d.when.replace(dayKey,'').trim() && dayKey ? `<span style="color:var(--text-muted);font-size:0.65rem">${dayKey}</span>` : ''}
+                </div>
+                <div class="dep-who">→ ${d.wer}</div>
+                <div class="dep-what">${d.was}</div>
+                ${d.done ? `<div class="dep-status">✓ done</div>` : ''}
+            </div>
+        `;
+    }).join('');
+}
+
+function filterDeps(day) {
+    activeDayFilter = day;
+    document.querySelectorAll('#dep-filter-bar .pill').forEach(p => {
+        p.classList.toggle('active', p.dataset.day === day);
+    });
+    renderDeps(day);
+}
+
+// ═══════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════
+function updateCountdown() {
+    const target = new Date('2026-06-06T15:00:00');
+    const start  = new Date('2025-01-01T00:00:00'); // engagement start approx
+    const now    = new Date();
+    const diff   = target - now;
+
+    if (diff <= 0) {
+        ['cd-days','cd-hours','cd-mins','cd-secs'].forEach(id => {
+            document.getElementById(id).textContent = '00';
+        });
+        return;
+    }
+
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+
+    document.getElementById('cd-days').textContent  = String(days).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = String(hours).padStart(2,'0');
+    document.getElementById('cd-mins').textContent  = String(mins).padStart(2,'0');
+    document.getElementById('cd-secs').textContent  = String(secs).padStart(2,'0');
+
+    // Progress: % of time from "now" toward wedding, based on last 30 days window
+    const windowMs = 30 * 86400000;
+    const elapsed  = windowMs - Math.min(diff, windowMs);
+    const pct      = Math.min(100, Math.round((elapsed / windowMs) * 100));
+    document.getElementById('prog-pct').textContent = pct + '%';
+    document.getElementById('prog-fill').style.width = pct + '%';
+}
+
+// ═══════════════════════════════════════
+// LIVE CLOCK
+// ═══════════════════════════════════════
+function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2,'0');
+    const m = String(now.getMinutes()).padStart(2,'0');
+    const s = String(now.getSeconds()).padStart(2,'0');
+    document.getElementById('live-clock').textContent = `${h}:${m}:${s}`;
+}
+
+// ═══════════════════════════════════════
+// SCROLL FADE IN
+// ═══════════════════════════════════════
+function initFadeIn() {
+    const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.05 });
+    document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+}
+
+// ═══════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    renderMatrix('all');
+    renderTimeline();
+    renderDeps('all');
+    updateCountdown();
+    updateClock();
+    setInterval(updateCountdown, 1000);
+    setInterval(updateClock, 1000);
+    initFadeIn();
+});
+</script>
+</body>
+</html>
