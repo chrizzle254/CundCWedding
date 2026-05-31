@@ -341,15 +341,13 @@ function populateAgenda() {
             const titleEl = document.createElement("div");
             titleEl.className = "text-sm font-semibold font-montserrat";
             titleEl.style.color = "var(--pine-900)";
-            //titleEl.textContent = `${item.time}: ${item.title}`;
-            titleEl.textContent = `${item.time}`;
+            titleEl.textContent = `${item.time}: ${item.icon} ${item.title}`;
             div.appendChild(titleEl);
-            
+
             const descEl = document.createElement("p");
             descEl.className = "mt-1 text-sm sm:text-base leading-relaxed font-montserrat";
             descEl.style.color = "var(--pine-800)";
-            //descEl.textContent = item.description;
-            descEl.textContent = `${item.icon} ${item.title}`;
+            descEl.textContent = item.description;
             div.appendChild(descEl);
             
             timelineContainer.appendChild(div);
