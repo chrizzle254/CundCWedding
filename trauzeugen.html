@@ -250,24 +250,30 @@
             border-bottom: 1px solid var(--border);
             letter-spacing: 0.05em;
             text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         .day-title span { color: var(--text-secondary); font-weight: 600; }
         .event-list { padding: 0.75rem 0; }
         .event-item {
-            padding: 0.55rem 1.25rem;
+            padding: 0.4rem 1.25rem;
             display: grid;
-            grid-template-columns: 80px 1fr;
-            gap: 0.75rem;
+            grid-template-columns: 80px 1fr auto;
+            gap: 0.5rem;
             align-items: start;
-            border-left: 2px solid transparent;
             transition: background 0.1s;
         }
         .event-item:hover { background: rgba(255,255,255,0.02); }
+        .event-item:hover .item-actions { opacity: 1; }
+        .event-item.is-checked .event-what { text-decoration: line-through; color: var(--text-muted); }
+        .event-item.is-checked .event-detail { color: var(--text-muted); opacity: 0.5; }
+        .event-item.is-checked .event-time { opacity: 0.4; }
         .event-time {
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.72rem;
             color: var(--blue);
-            padding-top: 0.1rem;
+            padding-top: 0.25rem;
             white-space: nowrap;
         }
         .event-time.no-time { color: var(--text-muted); }
@@ -294,6 +300,83 @@
             border: 1px solid var(--border);
             color: var(--text-muted);
         }
+
+        /* ── Shared item actions ── */
+        .item-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            opacity: 0;
+            transition: opacity 0.15s;
+            padding-top: 0.1rem;
+        }
+        .ia-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6rem;
+            padding: 0.15rem 0.35rem;
+            border-radius: 3px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.12s;
+            white-space: nowrap;
+            line-height: 1.4;
+        }
+        .ia-btn:hover { border-color: var(--border-bright); color: var(--text-primary); }
+        .ia-btn.check:hover  { border-color: var(--green); color: var(--green); }
+        .ia-btn.uncheck:hover { border-color: var(--red); color: var(--red); }
+        .ia-btn.edit-btn:hover  { border-color: var(--blue); color: var(--blue); }
+        .ia-btn.del:hover   { border-color: var(--red); color: var(--red); }
+
+        /* inline edit input */
+        .edit-input {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--blue);
+            border-radius: 4px;
+            color: var(--text-primary);
+            padding: 0.2rem 0.4rem;
+            width: 100%;
+            outline: none;
+        }
+        .edit-input:focus { box-shadow: 0 0 0 2px rgba(88,166,255,0.2); }
+
+        /* add-new row */
+        .add-item-row {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem 1.25rem 0.75rem;
+            border-top: 1px dashed var(--border);
+        }
+        .add-input {
+            flex: 1;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text-primary);
+            padding: 0.3rem 0.6rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        .add-input:focus { border-color: var(--green); }
+        .add-input::placeholder { color: var(--text-muted); }
+        .add-btn {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            padding: 0.3rem 0.7rem;
+            border-radius: 4px;
+            border: 1px solid var(--green-dim);
+            background: var(--green-dim);
+            color: var(--green);
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .add-btn:hover { background: rgba(63,185,80,0.2); border-color: var(--green); }
 
         /* ── Dependencies ── */
         .dep-grid {
@@ -635,9 +718,12 @@
             <span class="dot dot-red"></span>
             <span class="dot dot-yellow"></span>
             <span class="dot dot-green"></span>
-            &nbsp; dependencies.log &nbsp;·&nbsp; external actors &nbsp;·&nbsp; readonly
+            &nbsp; dependencies.log &nbsp;·&nbsp; external actors
         </div>
         <div class="dep-grid" id="dep-grid"></div>
+        <div style="padding: 1rem 1.25rem; border-top: 1px dashed var(--border);">
+            <div id="deps-add-row"></div>
+        </div>
     </div>
 
     <div style="height: 4rem;"></div>
@@ -838,6 +924,147 @@ function filterMatrix(person) {
 }
 
 // ═══════════════════════════════════════
+// SHARED STATE (from /items API)
+// ═══════════════════════════════════════
+const ITEMS_API = '/.netlify/functions/items';
+
+let overrides  = {};   // { id: { checked, label } }
+let customs    = [];   // custom items from DB
+
+async function loadState() {
+    try {
+        const res = await fetch(ITEMS_API);
+        if (!res.ok) throw new Error('load failed');
+        const data = await res.json();
+        overrides = data.overrides || {};
+        customs   = data.customs   || [];
+    } catch (err) {
+        console.warn('Could not load state:', err);
+    }
+}
+
+// Optimistic helpers
+async function apiPost(body) {
+    const res = await fetch(ITEMS_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+    });
+    if (!res.ok) throw new Error('API error');
+    return res.json();
+}
+
+function getLabel(id, fallback) {
+    return (overrides[id] && overrides[id].label != null) ? overrides[id].label : fallback;
+}
+function isChecked(id) {
+    return !!(overrides[id] && overrides[id].checked);
+}
+
+// ─── Toggle built-in item ───────────────────────────────────────────────────
+async function toggleItem(id, rerender) {
+    const now = !isChecked(id);
+    overrides[id] = { ...(overrides[id] || {}), checked: now };
+    rerender();
+    try { await apiPost({ action: 'toggle', id, checked: now }); }
+    catch (err) {
+        console.error('toggle failed', err);
+        overrides[id].checked = !now;
+        rerender();
+    }
+}
+
+// ─── Edit built-in item label ───────────────────────────────────────────────
+async function editItem(id, label, rerender) {
+    const old = getLabel(id, null);
+    overrides[id] = { ...(overrides[id] || {}), label };
+    rerender();
+    try { await apiPost({ action: 'edit', id, label }); }
+    catch (err) {
+        console.error('edit failed', err);
+        overrides[id].label = old;
+        rerender();
+    }
+}
+
+// ─── Toggle custom item ─────────────────────────────────────────────────────
+async function toggleCustom(id, rerender) {
+    const item = customs.find(c => c.id === id);
+    if (!item) return;
+    const now = !item.checked;
+    item.checked = now;
+    rerender();
+    try { await apiPost({ action: 'toggle_custom', id, checked: now }); }
+    catch (err) {
+        console.error('toggle_custom failed', err);
+        item.checked = !now;
+        rerender();
+    }
+}
+
+// ─── Edit custom item ───────────────────────────────────────────────────────
+async function editCustom(id, data, rerender) {
+    const item = customs.find(c => c.id === id);
+    if (!item) return;
+    const old = item.data;
+    item.data = data;
+    rerender();
+    try { await apiPost({ action: 'edit_custom', id, data }); }
+    catch (err) {
+        console.error('edit_custom failed', err);
+        item.data = old;
+        rerender();
+    }
+}
+
+// ─── Add custom item ────────────────────────────────────────────────────────
+async function addCustom(list, list_key, data, rerender) {
+    const tmp = { id: 'tmp_' + Math.random(), list, list_key, data, checked: false, position: Date.now() };
+    customs.push(tmp);
+    rerender();
+    try {
+        const saved = await apiPost({ action: 'add', list, list_key, data, position: tmp.position });
+        const idx = customs.findIndex(c => c.id === tmp.id);
+        if (idx !== -1) customs[idx] = saved;
+        rerender();
+    } catch (err) {
+        console.error('add failed', err);
+        customs = customs.filter(c => c.id !== tmp.id);
+        rerender();
+    }
+}
+
+// ─── Delete custom item ─────────────────────────────────────────────────────
+async function deleteCustom(id, rerender) {
+    const backup = customs.find(c => c.id === id);
+    customs = customs.filter(c => c.id !== id);
+    rerender();
+    try { await apiPost({ action: 'delete_custom', id }); }
+    catch (err) {
+        console.error('delete failed', err);
+        if (backup) customs.push(backup);
+        rerender();
+    }
+}
+
+// ─── Inline edit helper ─────────────────────────────────────────────────────
+function startInlineEdit(el, currentVal, onSave) {
+    const input = document.createElement('input');
+    input.className = 'edit-input';
+    input.value = currentVal;
+    el.replaceWith(input);
+    input.focus();
+    input.select();
+
+    const save = () => { const v = input.value.trim(); if (v) onSave(v); };
+    input.addEventListener('keydown', e => {
+        if (e.key === 'Enter')  { e.preventDefault(); save(); }
+        if (e.key === 'Escape') { save(); }
+    });
+    input.addEventListener('blur', save);
+}
+
+// ═══════════════════════════════════════
 // RENDER: TIMELINE
 // ═══════════════════════════════════════
 function renderTimeline() {
@@ -846,107 +1073,213 @@ function renderTimeline() {
         const events = TIMELINE_DATA[day];
         if (!events) return '';
         const dayClass = DAY_CLASS[day] || '';
+        const dayCustoms = customs.filter(c => c.list === 'timeline' && c.list_key === day);
 
-        const items = events.map(ev => `
-            <div class="event-item">
-                <div class="event-time ${ev.time ? '' : 'no-time'}">${ev.time || '——'}</div>
-                <div class="event-content">
-                    <div class="event-what">${ev.what}</div>
-                    ${ev.detail ? `<div class="event-detail">${ev.detail}</div>` : ''}
-                    ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
-                </div>
-            </div>
-        `).join('');
+        const builtInItems = events.map((ev, evIdx) => {
+            const id = `tl_${day}_${evIdx}`;
+            const checked = isChecked(id);
+            const label = getLabel(id, ev.what);
+            return `
+                <div class="event-item ${checked ? 'is-checked' : ''}" id="ei-${id}">
+                    <div class="event-time ${ev.time ? '' : 'no-time'}">${ev.time || '——'}</div>
+                    <div class="event-content">
+                        <div class="event-what">${label}</div>
+                        ${ev.detail ? `<div class="event-detail">${ev.detail}</div>` : ''}
+                        ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
+                    </div>
+                    <div class="item-actions">
+                        <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="tlToggle('${id}')">${checked ? '↩ undo' : '✓'}</button>
+                        <button class="ia-btn edit-btn" onclick="tlEdit('${id}', '${label.replace(/'/g,"\\'")}')">✏</button>
+                    </div>
+                </div>`;
+        }).join('');
+
+        const customItems = dayCustoms.map(c => {
+            const label = c.data.what || '';
+            return `
+                <div class="event-item ${c.checked ? 'is-checked' : ''}" id="ei-c-${c.id}">
+                    <div class="event-time no-time">${c.data.time || '——'}</div>
+                    <div class="event-content">
+                        <div class="event-what">${label}</div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="tlToggleCustom('${c.id}')">${c.checked ? '↩ undo' : '✓'}</button>
+                        <button class="ia-btn edit-btn" onclick="tlEditCustom('${c.id}', '${label.replace(/'/g,"\\'")}')">✏</button>
+                        <button class="ia-btn del" onclick="tlDeleteCustom('${c.id}')">✕</button>
+                    </div>
+                </div>`;
+        }).join('');
+
+        const emoji = day === 'Samstag' ? '⭐ Hochzeitstag' : day === 'Donnerstag' ? '💍 Standesamt' : '';
 
         return `
             <div class="card day-block">
                 <div class="day-title">
-                    <span class="day-badge ${dayClass}">${day}</span>
-                    <span>${day === 'Samstag' ? '⭐ Hochzeitstag' : day === 'Donnerstag' ? '💍 Standesamt' : ''}</span>
+                    <div><span class="day-badge ${dayClass}">${day}</span> <span>${emoji}</span></div>
                 </div>
-                <div class="event-list">${items}</div>
-            </div>
-        `;
+                <div class="event-list" id="tl-list-${day}">${builtInItems}${customItems}</div>
+                <div class="add-item-row">
+                    <input class="add-input" id="tl-add-${day}" placeholder="+ neuer Punkt..." onkeydown="if(event.key==='Enter') tlAdd('${day}')">
+                    <button class="add-btn" onclick="tlAdd('${day}')">+ add</button>
+                </div>
+            </div>`;
     }).join('');
+}
+
+// Timeline action handlers
+function tlToggle(id) { toggleItem(id, renderTimeline); }
+function tlEdit(id, current) {
+    const el = document.querySelector(`#ei-${id} .event-what`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id, v, renderTimeline));
+}
+function tlToggleCustom(id) { toggleCustom(id, renderTimeline); }
+function tlEditCustom(id, current) {
+    const el = document.querySelector(`#ei-c-${id} .event-what`);
+    if (!el) return;
+    startInlineEdit(el, current, v => {
+        const item = customs.find(c => c.id === id);
+        if (item) editCustom(id, { ...item.data, what: v }, renderTimeline);
+    });
+}
+function tlDeleteCustom(id) { deleteCustom(id, renderTimeline); }
+function tlAdd(day) {
+    const input = document.getElementById(`tl-add-${day}`);
+    if (!input || !input.value.trim()) return;
+    addCustom('timeline', day, { what: input.value.trim(), time: '' }, renderTimeline);
+    input.value = '';
 }
 
 // ═══════════════════════════════════════
 // RENDER: DEPENDENCIES
 // ═══════════════════════════════════════
 let activeDayFilter = 'all';
-let checkedDeps = new Set();
-
-const DEPS_API = '/.netlify/functions/deps';
-
-async function fetchCheckedDeps() {
-    try {
-        const res = await fetch(DEPS_API);
-        if (!res.ok) throw new Error('fetch failed');
-        const indices = await res.json();
-        checkedDeps = new Set(indices);
-    } catch (err) {
-        console.warn('Could not load dep checks from API, falling back to empty state:', err);
-        checkedDeps = new Set();
-    }
-    renderDeps(activeDayFilter);
-}
-
-async function toggleDep(idx) {
-    const nowChecked = !checkedDeps.has(idx);
-
-    // Optimistic update
-    if (nowChecked) checkedDeps.add(idx); else checkedDeps.delete(idx);
-    renderDeps(activeDayFilter);
-
-    try {
-        const res = await fetch(DEPS_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ idx, checked: nowChecked }),
-        });
-        if (!res.ok) throw new Error('save failed');
-    } catch (err) {
-        // Revert optimistic update on error
-        console.error('Failed to persist dep toggle:', err);
-        if (nowChecked) checkedDeps.delete(idx); else checkedDeps.add(idx);
-        renderDeps(activeDayFilter);
-    }
-}
 
 function renderDeps(dayFilter) {
     const grid = document.getElementById('dep-grid');
-    const filtered = DEPS_DATA.map((d, i) => ({ ...d, _origIdx: i })).filter(d => {
-        if (dayFilter === 'all') return true;
-        return d.when.startsWith(dayFilter);
+    const df = dayFilter || activeDayFilter;
+
+    // Built-in entries
+    const builtIn = DEPS_DATA.map((d, i) => ({ ...d, _origIdx: i })).filter(d => {
+        if (df === 'all') return true;
+        return d.when.startsWith(df);
     });
 
-    grid.innerHTML = filtered.map(d => {
-        const idx = d._origIdx;
-        const isChecked = checkedDeps.has(idx);
-        const isDoneFixed = !!d.done; // from source data, can't untoggle
+    // Custom entries for deps list
+    const depCustoms = customs.filter(c => {
+        if (c.list !== 'deps') return false;
+        if (df === 'all') return true;
+        return (c.data.when || '').startsWith(df);
+    });
+
+    const builtInHtml = builtIn.map(d => {
+        const id = `dep_${d._origIdx}`;
+        const checked = isChecked(id) || !!d.done;
+        const isDoneFixed = !!d.done;
+        const label = getLabel(id + '_was', d.was);
+        const labelWer = getLabel(id + '_wer', d.wer);
         const dayKey = DAY_ORDER.find(k => d.when.startsWith(k)) || '';
         const dayClass = DAY_CLASS[dayKey] || '';
-        const checkedClass = isChecked ? (isDoneFixed ? 'done' : 'checked-off') : '';
-        const btnLabel = isChecked && !isDoneFixed ? '✓ done — undo?' : '[ mark done ]';
+        const checkedClass = checked ? (isDoneFixed ? 'done' : 'checked-off') : '';
 
         return `
-            <div class="dep-item ${checkedClass}" id="dep-${idx}">
+            <div class="dep-item ${checkedClass}" id="dep-item-${id}">
                 <div class="dep-item-inner">
                     <div style="flex:1;display:flex;flex-direction:column;gap:0.35rem;">
                         <div class="dep-when mono">
-                            <span class="day-badge ${dayClass}" style="margin-right:0.3rem">${d.when.replace(dayKey,'').trim() || dayKey}</span>
-                            ${d.when.replace(dayKey,'').trim() && dayKey ? `<span style="color:var(--text-muted);font-size:0.65rem">${dayKey}</span>` : ''}
+                            <span class="day-badge ${dayClass}">${d.when.replace(dayKey,'').trim() || dayKey}</span>
+                            ${d.when.replace(dayKey,'').trim() && dayKey ? `<span style="color:var(--text-muted);font-size:0.65rem"> ${dayKey}</span>` : ''}
                         </div>
-                        <div class="dep-who">→ ${d.wer}</div>
-                        <div class="dep-what">${d.was}</div>
+                        <div class="dep-who" id="depwer-${id}">→ ${labelWer}</div>
+                        <div class="dep-what" id="depwas-${id}">${label}</div>
                         ${isDoneFixed ? `<div class="dep-status">✓ done</div>` : ''}
                     </div>
-                    ${!isDoneFixed ? `<button class="dep-check-btn" onclick="toggleDep(${idx})">${btnLabel}</button>` : ''}
+                    ${!isDoneFixed ? `
+                    <div style="display:flex;flex-direction:column;gap:0.2rem;align-items:flex-end;">
+                        <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="depToggle('${id}')">${checked ? '↩ undo' : '✓ done'}</button>
+                        <button class="ia-btn edit-btn" onclick="depEditWas('${id}', '${label.replace(/'/g,"\\'")}')">✏ was</button>
+                        <button class="ia-btn edit-btn" onclick="depEditWer('${id}', '${labelWer.replace(/'/g,"\\'")}')">✏ wer</button>
+                    </div>` : ''}
                 </div>
-            </div>
-        `;
+            </div>`;
     }).join('');
+
+    const customHtml = depCustoms.map(c => {
+        const dayKey = DAY_ORDER.find(k => (c.data.when||'').startsWith(k)) || '';
+        const dayClass = DAY_CLASS[dayKey] || '';
+        return `
+            <div class="dep-item ${c.checked ? 'checked-off' : ''}" id="dep-item-c-${c.id}">
+                <div class="dep-item-inner">
+                    <div style="flex:1;display:flex;flex-direction:column;gap:0.35rem;">
+                        <div class="dep-when mono">
+                            <span class="day-badge ${dayClass}">${(c.data.when||'').replace(dayKey,'').trim() || dayKey}</span>
+                        </div>
+                        <div class="dep-who" id="depwer-c-${c.id}">→ ${c.data.wer || '?'}</div>
+                        <div class="dep-what" id="depwas-c-${c.id}">${c.data.was || ''}</div>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:0.2rem;align-items:flex-end;">
+                        <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="depToggleCustom('${c.id}')">${c.checked ? '↩ undo' : '✓ done'}</button>
+                        <button class="ia-btn edit-btn" onclick="depEditCustomWas('${c.id}', '${(c.data.was||'').replace(/'/g,"\\'")}')">✏ was</button>
+                        <button class="ia-btn edit-btn" onclick="depEditCustomWer('${c.id}', '${(c.data.wer||'').replace(/'/g,"\\'")}')">✏ wer</button>
+                        <button class="ia-btn del" onclick="depDeleteCustom('${c.id}')">✕</button>
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+
+    grid.innerHTML = builtInHtml + customHtml;
 }
+
+// Add-row for deps is outside the card — rendered separately
+function renderDepsAddRow() {
+    const wrap = document.getElementById('deps-add-row');
+    if (!wrap) return;
+    wrap.innerHTML = `
+        <div class="add-item-row" style="padding: 0; gap: 0.4rem; flex-wrap: wrap;">
+            <input class="add-input" id="dep-add-when" placeholder="Wann (z.B. Freitag)" style="flex:1;min-width:100px;" onkeydown="if(event.key==='Enter')depAdd()">
+            <input class="add-input" id="dep-add-wer"  placeholder="Wer" style="flex:1;min-width:100px;" onkeydown="if(event.key==='Enter')depAdd()">
+            <input class="add-input" id="dep-add-was"  placeholder="Was" style="flex:2;min-width:160px;" onkeydown="if(event.key==='Enter')depAdd()">
+            <button class="add-btn" onclick="depAdd()">+ add</button>
+        </div>`;
+}
+
+function depAdd() {
+    const when = (document.getElementById('dep-add-when')?.value || '').trim();
+    const wer  = (document.getElementById('dep-add-wer')?.value  || '').trim();
+    const was  = (document.getElementById('dep-add-was')?.value  || '').trim();
+    if (!was) return;
+    addCustom('deps', null, { when, wer, was }, () => renderDeps(activeDayFilter));
+    ['dep-add-when','dep-add-wer','dep-add-was'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+    });
+}
+
+// Dep action handlers
+function depToggle(id) { toggleItem(id, () => renderDeps(activeDayFilter)); }
+function depEditWas(id, current) {
+    const el = document.getElementById(`depwas-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id + '_was', v, () => renderDeps(activeDayFilter)));
+}
+function depEditWer(id, current) {
+    const el = document.getElementById(`depwer-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current.replace('→ ',''), v => editItem(id + '_wer', v, () => renderDeps(activeDayFilter)));
+}
+function depToggleCustom(id) { toggleCustom(id, () => renderDeps(activeDayFilter)); }
+function depEditCustomWas(id, current) {
+    const el = document.getElementById(`depwas-c-${id}`);
+    if (!el) return;
+    const item = customs.find(c => c.id === id);
+    startInlineEdit(el, current, v => editCustom(id, { ...item.data, was: v }, () => renderDeps(activeDayFilter)));
+}
+function depEditCustomWer(id, current) {
+    const el = document.getElementById(`depwer-c-${id}`);
+    if (!el) return;
+    const item = customs.find(c => c.id === id);
+    startInlineEdit(el, current.replace('→ ',''), v => editCustom(id, { ...item.data, wer: v }, () => renderDeps(activeDayFilter)));
+}
+function depDeleteCustom(id) { deleteCustom(id, () => renderDeps(activeDayFilter)); }
 
 function filterDeps(day) {
     activeDayFilter = day;
@@ -1014,15 +1347,22 @@ function initFadeIn() {
 // ═══════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     renderMatrix('all');
-    renderTimeline();
-    fetchCheckedDeps(); // loads from Supabase, then renders deps
+    renderTimeline();        // render with empty state first
+    renderDeps('all');
+    renderDepsAddRow();
+
     updateCountdown();
     updateClock();
     setInterval(updateCountdown, 1000);
     setInterval(updateClock, 1000);
     initFadeIn();
+
+    // Load persisted state, then re-render all editable lists
+    await loadState();
+    renderTimeline();
+    renderDeps(activeDayFilter);
 });
 </script>
 </body>
