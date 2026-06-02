@@ -1149,32 +1149,35 @@ function renderTimeline() {
             const id = `tl_${day}_${evIdx}`;
             const checked = isChecked(id);
             const label = getLabel(id, ev.what);
+            const detail = getLabel(id + '_detail', ev.detail || '');
             return `
                 <div class="event-item ${checked ? 'is-checked' : ''}" id="ei-${id}">
                     <div class="event-time ${ev.time ? '' : 'no-time'}">${ev.time || '——'}</div>
                     <div class="event-content">
                         <div class="event-what">${label}</div>
-                        ${ev.detail ? `<div class="event-detail">${ev.detail}</div>` : ''}
+                        ${detail ? `<div class="event-detail" id="ei-det-${id}">${detail}</div>` : `<div class="event-detail" id="ei-det-${id}" style="display:none"></div>`}
                         ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
                     </div>
                     <div class="item-actions">
-                        <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="tlToggle('${id}')">${checked ? '↩ undo' : '✓'}</button>
-                        <button class="ia-btn edit-btn" onclick="tlEdit('${id}', '${label.replace(/'/g,"\\'")}')">✏</button>
+                        <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="tlToggle('${id}')">${checked ? '↩' : '✓'}</button>
+                        <button class="ia-btn edit-btn" onclick="tlEditBoth('${id}', '${label.replace(/'/g,"\\'")}', '${detail.replace(/'/g,"\\'")}')">✏</button>
                     </div>
                 </div>`;
         }).join('');
 
         const customItems = dayCustoms.map(c => {
             const label = c.data.what || '';
+            const detail = c.data.detail || '';
             return `
                 <div class="event-item ${c.checked ? 'is-checked' : ''}" id="ei-c-${c.id}">
                     <div class="event-time no-time">${c.data.time || '——'}</div>
                     <div class="event-content">
                         <div class="event-what">${label}</div>
+                        ${detail ? `<div class="event-detail" id="ei-cdet-${c.id}">${detail}</div>` : `<div class="event-detail" id="ei-cdet-${c.id}" style="display:none"></div>`}
                     </div>
                     <div class="item-actions">
-                        <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="tlToggleCustom('${c.id}')">${c.checked ? '↩ undo' : '✓'}</button>
-                        <button class="ia-btn edit-btn" onclick="tlEditCustom('${c.id}', '${label.replace(/'/g,"\\'")}')">✏</button>
+                        <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="tlToggleCustom('${c.id}')">${c.checked ? '↩' : '✓'}</button>
+                        <button class="ia-btn edit-btn" onclick="tlEditCustomBoth('${c.id}', '${label.replace(/'/g,"\\'")}', '${detail.replace(/'/g,"\\'")}')">✏</button>
                         <button class="ia-btn del" onclick="tlDeleteCustom('${c.id}')">✕</button>
                     </div>
                 </div>`;
@@ -1198,20 +1201,41 @@ function renderTimeline() {
 
 // Timeline action handlers
 function tlToggle(id) { toggleItem(id, renderTimeline); }
-function tlEdit(id, current) {
-    const el = document.querySelector(`#ei-${id} .event-what`);
-    if (!el) return;
-    startInlineEdit(el, current, v => editItem(id, v, renderTimeline));
-}
-function tlToggleCustom(id) { toggleCustom(id, renderTimeline); }
-function tlEditCustom(id, current) {
-    const el = document.querySelector(`#ei-c-${id} .event-what`);
-    if (!el) return;
-    startInlineEdit(el, current, v => {
-        const item = customs.find(c => c.id === id);
-        if (item) editCustom(id, { ...item.data, what: v }, renderTimeline);
+
+function tlEditBoth(id, currentLabel, currentDetail) {
+    const whatEl = document.querySelector(`#ei-${id} .event-what`);
+    if (!whatEl) return;
+    startInlineEdit(whatEl, currentLabel, newLabel => {
+        editItem(id, newLabel, () => {});
+        // After title saved, open detail
+        const detEl = document.getElementById(`ei-det-${id}`);
+        if (!detEl) return;
+        detEl.style.display = '';
+        startInlineEdit(detEl, currentDetail, newDetail => {
+            editItem(id + '_detail', newDetail, renderTimeline);
+        });
     });
 }
+
+function tlToggleCustom(id) { toggleCustom(id, renderTimeline); }
+
+function tlEditCustomBoth(id, currentLabel, currentDetail) {
+    const whatEl = document.querySelector(`#ei-c-${id} .event-what`);
+    if (!whatEl) return;
+    startInlineEdit(whatEl, currentLabel, newLabel => {
+        const item = customs.find(c => c.id === id);
+        if (item) editCustom(id, { ...item.data, what: newLabel }, () => {});
+        // After title saved, open detail
+        const detEl = document.getElementById(`ei-cdet-${id}`);
+        if (!detEl) return;
+        detEl.style.display = '';
+        startInlineEdit(detEl, currentDetail, newDetail => {
+            const item2 = customs.find(c => c.id === id);
+            if (item2) editCustom(id, { ...item2.data, detail: newDetail }, renderTimeline);
+        });
+    });
+}
+
 function tlDeleteCustom(id) { deleteCustom(id, renderTimeline); }
 function tlAdd(day) {
     const input = document.getElementById(`tl-add-${day}`);
