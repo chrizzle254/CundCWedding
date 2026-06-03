@@ -1183,7 +1183,7 @@ function renderTimeline() {
                     <div class="event-content">
                         <div class="event-what editable" onclick="tlEditLabel('${id}', '${label.replace(/'/g,"\\'")}')">  ${label}</div>
                         <div class="event-detail editable ${detail ? '' : 'detail-empty'}" id="ei-det-${id}" onclick="tlEditDetail('${id}', '${detail.replace(/'/g,"\\'")}')"> ${detail || '+ notiz...'}</div>
-                        ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
+                        <span class="event-who editable ${ev.who ? '' : 'detail-empty'}" id="ei-who-${id}" onclick="tlEditWho('${id}', '${(getLabel(id+'_who', ev.who||'')).replace(/'/g,"\\'")}')"> ${getLabel(id + '_who', ev.who || '+ person...')}</span>
                     </div>
                     <div class="item-actions">
                         <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="tlToggle('${id}')">${checked ? '↩' : '✓'}</button>
@@ -1200,6 +1200,7 @@ function renderTimeline() {
                     <div class="event-content">
                         <div class="event-what editable" onclick="tlEditCustomLabel('${c.id}', '${label.replace(/'/g,"\\'")}')"> ${label}</div>
                         <div class="event-detail editable ${detail ? '' : 'detail-empty'}" id="ei-cdet-${c.id}" onclick="tlEditCustomDetail('${c.id}', '${detail.replace(/'/g,"\\'")}')"> ${detail || '+ notiz...'}</div>
+                        <span class="event-who editable ${c.data.who ? '' : 'detail-empty'}" id="ei-cwho-${c.id}" onclick="tlEditCustomWho('${c.id}', '${(c.data.who||'').replace(/'/g,"\\'")}')"> ${c.data.who || '+ person...'}</span>
                     </div>
                     <div class="item-actions">
                         <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="tlToggleCustom('${c.id}')">${c.checked ? '↩' : '✓'}</button>
@@ -1242,6 +1243,11 @@ function tlEditDetail(id, current) {
     if (!el) return;
     startInlineEdit(el, current, v => editItem(id + '_detail', v, renderTimeline), true);
 }
+function tlEditWho(id, current) {
+    const el = document.getElementById(`ei-who-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id + '_who', v, renderTimeline), true);
+}
 
 function tlToggleCustom(id) { toggleCustom(id, renderTimeline); }
 
@@ -1267,6 +1273,14 @@ function tlEditCustomDetail(id, current) {
     startInlineEdit(el, current, v => {
         const item = customs.find(c => c.id === id);
         if (item) editCustom(id, { ...item.data, detail: v }, renderTimeline);
+    }, true);
+}
+function tlEditCustomWho(id, current) {
+    const el = document.getElementById(`ei-cwho-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => {
+        const item = customs.find(c => c.id === id);
+        if (item) editCustom(id, { ...item.data, who: v }, renderTimeline);
     }, true);
 }
 
