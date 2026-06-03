@@ -275,8 +275,13 @@
             color: var(--blue);
             padding-top: 0.25rem;
             white-space: nowrap;
+            cursor: pointer;
+            border-bottom: 1px dashed transparent;
+            transition: border-color 0.15s;
         }
+        .event-time:hover { border-bottom-color: var(--blue); }
         .event-time.no-time { color: var(--text-muted); }
+        .event-time.no-time:hover { border-bottom-color: var(--text-muted); }
         .event-content { }
         .event-what {
             font-size: 0.82rem;
@@ -289,6 +294,21 @@
             color: var(--text-secondary);
             margin-top: 0.15rem;
         }
+        .editable {
+            cursor: pointer;
+            border-radius: 3px;
+            transition: background 0.1s;
+        }
+        .editable:hover { background: rgba(88,166,255,0.08); }
+        .event-time.editable:hover { background: rgba(88,166,255,0.12); }
+        .detail-empty {
+            color: var(--text-muted);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+        .event-item:hover .detail-empty,
+        .event-item:focus-within .detail-empty { opacity: 1; }
         .event-who {
             display: inline-block;
             font-family: 'JetBrains Mono', monospace;
@@ -1118,7 +1138,8 @@ async function deleteCustom(id, rerender) {
 }
 
 // ─── Inline edit helper ─────────────────────────────────────────────────────
-function startInlineEdit(el, currentVal, onSave) {
+// allowEmpty: if true, saves even empty string (for clearing description)
+function startInlineEdit(el, currentVal, onSave, allowEmpty = false) {
     const input = document.createElement('input');
     input.className = 'edit-input';
     input.value = currentVal;
@@ -1126,10 +1147,16 @@ function startInlineEdit(el, currentVal, onSave) {
     input.focus();
     input.select();
 
-    const save = () => { const v = input.value.trim(); if (v) onSave(v); };
+    let saved = false;
+    const save = () => {
+        if (saved) return;
+        saved = true;
+        const v = input.value.trim();
+        if (v || allowEmpty) onSave(v);
+    };
     input.addEventListener('keydown', e => {
         if (e.key === 'Enter')  { e.preventDefault(); save(); }
-        if (e.key === 'Escape') { save(); }
+        if (e.key === 'Escape') { saved = true; renderTimeline(); } // cancel
     });
     input.addEventListener('blur', save);
 }
@@ -1152,15 +1179,14 @@ function renderTimeline() {
             const detail = getLabel(id + '_detail', ev.detail || '');
             return `
                 <div class="event-item ${checked ? 'is-checked' : ''}" id="ei-${id}">
-                    <div class="event-time ${ev.time ? '' : 'no-time'}">${ev.time || '——'}</div>
+                    <div class="event-time ${ev.time ? '' : 'no-time'} editable" id="ei-time-${id}" onclick="tlEditTime('${id}', '${(getLabel(id+'_time', ev.time||'')).replace(/'/g,"\\'")}')"> ${getLabel(id + '_time', ev.time || '——')}</div>
                     <div class="event-content">
-                        <div class="event-what">${label}</div>
-                        ${detail ? `<div class="event-detail" id="ei-det-${id}">${detail}</div>` : `<div class="event-detail" id="ei-det-${id}" style="display:none"></div>`}
+                        <div class="event-what editable" onclick="tlEditLabel('${id}', '${label.replace(/'/g,"\\'")}')">  ${label}</div>
+                        <div class="event-detail editable ${detail ? '' : 'detail-empty'}" id="ei-det-${id}" onclick="tlEditDetail('${id}', '${detail.replace(/'/g,"\\'")}')"> ${detail || '+ notiz...'}</div>
                         ${ev.who ? `<span class="event-who">${ev.who}</span>` : ''}
                     </div>
                     <div class="item-actions">
                         <button class="ia-btn ${checked ? 'uncheck' : 'check'}" onclick="tlToggle('${id}')">${checked ? '↩' : '✓'}</button>
-                        <button class="ia-btn edit-btn" onclick="tlEditBoth('${id}', '${label.replace(/'/g,"\\'")}', '${detail.replace(/'/g,"\\'")}')">✏</button>
                     </div>
                 </div>`;
         }).join('');
@@ -1170,14 +1196,13 @@ function renderTimeline() {
             const detail = c.data.detail || '';
             return `
                 <div class="event-item ${c.checked ? 'is-checked' : ''}" id="ei-c-${c.id}">
-                    <div class="event-time no-time">${c.data.time || '——'}</div>
+                    <div class="event-time ${c.data.time ? '' : 'no-time'} editable" id="ei-ctime-${c.id}" onclick="tlEditCustomTime('${c.id}', '${(c.data.time||'').replace(/'/g,"\\'")}')"> ${c.data.time || '——'}</div>
                     <div class="event-content">
-                        <div class="event-what">${label}</div>
-                        ${detail ? `<div class="event-detail" id="ei-cdet-${c.id}">${detail}</div>` : `<div class="event-detail" id="ei-cdet-${c.id}" style="display:none"></div>`}
+                        <div class="event-what editable" onclick="tlEditCustomLabel('${c.id}', '${label.replace(/'/g,"\\'")}')"> ${label}</div>
+                        <div class="event-detail editable ${detail ? '' : 'detail-empty'}" id="ei-cdet-${c.id}" onclick="tlEditCustomDetail('${c.id}', '${detail.replace(/'/g,"\\'")}')"> ${detail || '+ notiz...'}</div>
                     </div>
                     <div class="item-actions">
                         <button class="ia-btn ${c.checked ? 'uncheck' : 'check'}" onclick="tlToggleCustom('${c.id}')">${c.checked ? '↩' : '✓'}</button>
-                        <button class="ia-btn edit-btn" onclick="tlEditCustomBoth('${c.id}', '${label.replace(/'/g,"\\'")}', '${detail.replace(/'/g,"\\'")}')">✏</button>
                         <button class="ia-btn del" onclick="tlDeleteCustom('${c.id}')">✕</button>
                     </div>
                 </div>`;
@@ -1202,38 +1227,47 @@ function renderTimeline() {
 // Timeline action handlers
 function tlToggle(id) { toggleItem(id, renderTimeline); }
 
-function tlEditBoth(id, currentLabel, currentDetail) {
-    const whatEl = document.querySelector(`#ei-${id} .event-what`);
-    if (!whatEl) return;
-    startInlineEdit(whatEl, currentLabel, newLabel => {
-        editItem(id, newLabel, () => {});
-        // After title saved, open detail
-        const detEl = document.getElementById(`ei-det-${id}`);
-        if (!detEl) return;
-        detEl.style.display = '';
-        startInlineEdit(detEl, currentDetail, newDetail => {
-            editItem(id + '_detail', newDetail, renderTimeline);
-        });
-    });
+function tlEditTime(id, current) {
+    const el = document.getElementById(`ei-time-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id + '_time', v, renderTimeline), true);
+}
+function tlEditLabel(id, current) {
+    const el = document.querySelector(`#ei-${id} .event-what`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id, v, renderTimeline));
+}
+function tlEditDetail(id, current) {
+    const el = document.getElementById(`ei-det-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => editItem(id + '_detail', v, renderTimeline), true);
 }
 
 function tlToggleCustom(id) { toggleCustom(id, renderTimeline); }
 
-function tlEditCustomBoth(id, currentLabel, currentDetail) {
-    const whatEl = document.querySelector(`#ei-c-${id} .event-what`);
-    if (!whatEl) return;
-    startInlineEdit(whatEl, currentLabel, newLabel => {
+function tlEditCustomTime(id, current) {
+    const el = document.getElementById(`ei-ctime-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => {
         const item = customs.find(c => c.id === id);
-        if (item) editCustom(id, { ...item.data, what: newLabel }, () => {});
-        // After title saved, open detail
-        const detEl = document.getElementById(`ei-cdet-${id}`);
-        if (!detEl) return;
-        detEl.style.display = '';
-        startInlineEdit(detEl, currentDetail, newDetail => {
-            const item2 = customs.find(c => c.id === id);
-            if (item2) editCustom(id, { ...item2.data, detail: newDetail }, renderTimeline);
-        });
+        if (item) editCustom(id, { ...item.data, time: v }, renderTimeline);
+    }, true);
+}
+function tlEditCustomLabel(id, current) {
+    const el = document.querySelector(`#ei-c-${id} .event-what`);
+    if (!el) return;
+    startInlineEdit(el, current, v => {
+        const item = customs.find(c => c.id === id);
+        if (item) editCustom(id, { ...item.data, what: v }, renderTimeline);
     });
+}
+function tlEditCustomDetail(id, current) {
+    const el = document.getElementById(`ei-cdet-${id}`);
+    if (!el) return;
+    startInlineEdit(el, current, v => {
+        const item = customs.find(c => c.id === id);
+        if (item) editCustom(id, { ...item.data, detail: v }, renderTimeline);
+    }, true);
 }
 
 function tlDeleteCustom(id) { deleteCustom(id, renderTimeline); }
